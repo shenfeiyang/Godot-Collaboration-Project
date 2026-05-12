@@ -1,6 +1,13 @@
 extends CharacterBody2D
 
 const SPEED: float = 180.0
+const DASH_SPEED: float = 520.0
+const DASH_DURATION: float = 0.24
+const DASH_COOLDOWN: float = 0.22
+const BASIC_BULLET_SCENE_PATH: String = "res://abilities/basic_bullet/basic_bullet.tscn"
+const BLAST_BULLET_SCENE_PATH: String = "res://abilities/blast_bullet/blast_bullet.tscn"
+const AURA_SCENE_PATH: String = "res://abilities/aura/aura.tscn"
+const FIREBALL_SPAWN_DISTANCE: float = 28.0
 const STATE_IDLE: StringName = &"idle"
 const STATE_RUN: StringName = &"run"
 const STATE_ATTACK: StringName = &"attack"
@@ -14,6 +21,9 @@ const ATTACK_BLEND_PATHS: Array[String] = [
 const CONDITION_TO_IDLE: String = "parameters/StateMachine/conditions/to_idle"
 const CONDITION_TO_RUN: String = "parameters/StateMachine/conditions/to_run"
 const CONDITION_TO_ATTACK: String = "parameters/StateMachine/conditions/to_attack"
+const TIME_SCALE_PATH: String = "parameters/TimeScale/scale"
+const DEFAULT_ANIMATION_TIME_SCALE: float = 1.0
+const DASH_ANIMATION_TIME_SCALE: float = 1.35
 const TOP_LEVEL_CONDITION_PATHS: Array[String] = [
 	CONDITION_TO_IDLE,
 	CONDITION_TO_RUN,
@@ -32,6 +42,7 @@ const VISUAL_BLEND_PATHS: Array[String] = [
 
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var projectile_spawn_position: Marker2D = $ProjectileSpawnPosition
 # 顶层状态机只负责在待机、移动、攻击三大类状态之间切换。
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree["parameters/StateMachine/playback"]
 # attack 子状态机只负责决定当前进入 attack1、attack2 还是 attack3。
@@ -45,35 +56,50 @@ const VISUAL_BLEND_PATHS: Array[String] = [
 var input_direction: Vector2 = Vector2.DOWN
 # 只要处于攻击状态，就不允许移动逻辑覆盖当前动作。
 var is_attacking: bool = false
+var is_dashing: bool = false
 # 顶层 attack 退出改成 At End 后并不稳定，
 # 这里继续保留单段攻击时长，确保脚本能在正确时机解除攻击锁。
 var attack_time_left: float = 0.0
+var dash_time_left: float = 0.0
+var dash_cooldown_left: float = 0.0
+var dash_direction: Vector2 = Vector2.DOWN
 # 攻击期间先只缓存出口目标，等顶层真正进入 attack 后再把条件切到 idle 或 run，
 # 避免刚按下攻击的那一帧就被退出条件把 attack 抢回去。
 var attack_exit_condition_path: String = CONDITION_TO_IDLE
 # 记录最近一次明确的斜向输入，用来吸收玩家松手时两个方向键不同步带来的瞬时抖动。
 var last_diagonal_direction: Vector2 = Vector2.ZERO
 var diagonal_release_grace_left: float = 0.0
+var active_aura: Node = null
 
 # 初始化动画树和默认朝向，保证角色一进场就处于正确的待机状态。
 func _ready() -> void:
 	animation_tree.active = true
+	animation_tree[TIME_SCALE_PATH] = DEFAULT_ANIMATION_TIME_SCALE
 	_update_visual_direction(input_direction)
 	_clear_top_level_conditions()
 
 # 每帧先统一处理输入和状态优先级，再决定是攻击分支还是移动分支。
 func _physics_process(delta: float) -> void:
 	var movement := _get_movement_input()
+	_update_dash_cooldown(delta)
 	_update_input_direction(movement, delta)
 
+	if is_attacking:
+		_process_attack(delta, movement)
+		return
+
 	# 这一层先处理攻击，是为了让攻击成为更高优先级状态，
-	# 避免同一帧里移动动画又把攻击动画顶掉。
+	# 避免同一帧里 dash 或移动把攻击动画顶掉。
 	if _try_start_attack():
 		_process_attack(delta, movement)
 		return
 
-	if is_attacking:
-		_process_attack(delta, movement)
+	if is_dashing:
+		_process_dash(delta)
+		return
+
+	if _try_start_dash(movement):
+		_process_dash(delta)
 		return
 
 	_process_movement(movement)
@@ -86,7 +112,7 @@ func _get_movement_input() -> Vector2:
 # 这里额外给斜向输入留一个很短的缓冲时间，避免玩家先松开一个方向键时，
 # 最后一帧朝向被瞬间改成纯横或纯竖，导致 idle 看起来像“丢了斜向”。
 func _update_input_direction(movement: Vector2, delta: float) -> void:
-	if is_attacking:
+	if is_attacking or is_dashing:
 		return
 
 	if movement == Vector2.ZERO:
@@ -123,6 +149,16 @@ func _try_start_attack() -> bool:
 	_start_attack(attack_name)
 	return true
 
+func _try_start_dash(movement: Vector2) -> bool:
+	if is_attacking or is_dashing or dash_cooldown_left > 0.0:
+		return false
+
+	if not Input.is_action_just_pressed(&"sprint"):
+		return false
+
+	_start_dash(_get_dash_direction(movement))
+	return true
+
 # 这里单独收口攻击输入，是为了以后要改成连招、蓄力、技能栏映射时，
 # 不用再去动攻击状态切换本身。
 func _get_attack_input_name() -> StringName:
@@ -134,6 +170,14 @@ func _get_attack_input_name() -> StringName:
 		return &"attack3"
 	return &""
 
+func _get_dash_direction(movement: Vector2) -> Vector2:
+	var direction := movement.normalized()
+	if direction == Vector2.ZERO:
+		direction = input_direction.normalized()
+	if direction == Vector2.ZERO:
+		return Vector2.DOWN
+	return direction
+
 # 进入攻击状态时同时切换顶层状态机和攻击子状态机，保持状态结构清晰。
 func _start_attack(attack_name: StringName) -> void:
 	is_attacking = true
@@ -143,7 +187,17 @@ func _start_attack(attack_name: StringName) -> void:
 	# 但 attack1 / attack2 / attack3 仍然保持“按哪个键进哪一段”的手动入口语义。
 	_update_visual_direction(input_direction)
 	attack_state.travel(attack_name)
+	_trigger_attack_skill(attack_name)
 	_set_top_level_condition(CONDITION_TO_ATTACK)
+
+func _start_dash(direction: Vector2) -> void:
+	is_dashing = true
+	dash_time_left = DASH_DURATION
+	dash_direction = direction
+	input_direction = dash_direction
+	_update_visual_direction(dash_direction)
+	animation_tree[TIME_SCALE_PATH] = DASH_ANIMATION_TIME_SCALE
+	_set_top_level_condition(CONDITION_TO_RUN)
 
 # 攻击处理单独拆出来，是为了把“锁移动 + 顶层状态机在动画尾部退出”封装成独立动作分支。
 func _process_attack(delta: float, movement: Vector2) -> void:
@@ -163,6 +217,15 @@ func _process_attack(delta: float, movement: Vector2) -> void:
 	if attack_time_left <= 0.0:
 		_finish_attack()
 
+func _process_dash(delta: float) -> void:
+	velocity = dash_direction * DASH_SPEED
+	move_and_slide()
+	_set_top_level_condition(CONDITION_TO_RUN)
+
+	dash_time_left -= delta
+	if dash_time_left <= 0.0:
+		_finish_dash()
+
 # 当前 attack 仍由脚本决定何时解锁，
 # 顶层状态机只负责根据条件在 attack 结尾时切到 idle 或 run。
 func _finish_attack() -> void:
@@ -170,6 +233,26 @@ func _finish_attack() -> void:
 	attack_time_left = 0.0
 	_update_visual_direction(input_direction)
 	_apply_attack_exit_condition()
+
+func _finish_dash() -> void:
+	is_dashing = false
+	dash_time_left = 0.0
+	dash_cooldown_left = DASH_COOLDOWN
+	animation_tree[TIME_SCALE_PATH] = DEFAULT_ANIMATION_TIME_SCALE
+	velocity = Vector2.ZERO
+
+	var movement := _get_movement_input()
+	if movement == Vector2.ZERO:
+		_set_top_level_condition(CONDITION_TO_IDLE)
+		return
+
+	_set_top_level_condition(CONDITION_TO_RUN)
+
+func _update_dash_cooldown(delta: float) -> void:
+	if dash_cooldown_left <= 0.0:
+		return
+
+	dash_cooldown_left = maxf(dash_cooldown_left - delta, 0.0)
 
 # 移动分支只处理位移与 locomotion 动画，不和攻击逻辑混在一起。
 func _process_movement(movement: Vector2) -> void:
@@ -218,6 +301,73 @@ func _update_attack_exit_condition(movement: Vector2) -> void:
 func _apply_attack_exit_condition() -> void:
 	_clear_top_level_conditions()
 	animation_tree[attack_exit_condition_path] = true
+
+# 把攻击输入和具体技能效果做一层薄分发，
+# 这样以后 attack2 / attack3 要接别的技能时，不用再把施法逻辑塞回状态切换里。
+func _trigger_attack_skill(attack_name: StringName) -> void:
+	if attack_name == &"attack1":
+		_cast_basic_bullet()
+		return
+
+	if attack_name == &"attack2":
+		_cast_blast_bullet()
+		return
+
+	if attack_name == &"attack3":
+		_cast_aura_skill()
+
+func _cast_basic_bullet() -> void:
+	_spawn_projectile(BASIC_BULLET_SCENE_PATH)
+
+func _cast_blast_bullet() -> void:
+	_spawn_projectile(BLAST_BULLET_SCENE_PATH)
+
+func _cast_aura_skill() -> void:
+	if is_instance_valid(active_aura):
+		active_aura.call(&"refresh_duration")
+		return
+
+	var aura_scene: PackedScene = load(AURA_SCENE_PATH)
+	if aura_scene == null:
+		return
+
+	var aura: Node = aura_scene.instantiate()
+	if aura == null:
+		return
+
+	add_child(aura)
+	active_aura = aura
+	aura.connect(&"expired", Callable(self, "_on_active_aura_expired"))
+
+# 火球本身是独立投射物，player 这里只负责决定发射时机、方向和出生位置。
+func _spawn_projectile(scene_path: String) -> void:
+	var projectile_scene: PackedScene = load(scene_path)
+	if projectile_scene == null:
+		return
+
+	var projectile: Node2D = projectile_scene.instantiate()
+	var projectile_direction := input_direction.normalized()
+	if projectile_direction == Vector2.ZERO:
+		projectile_direction = Vector2.DOWN
+
+	projectile.global_position = projectile_spawn_position.global_position + projectile_direction * FIREBALL_SPAWN_DISTANCE
+	projectile.call(&"setup", projectile_direction)
+	_get_projectiles_container().add_child(projectile)
+
+func _on_active_aura_expired() -> void:
+	active_aura = null
+
+# 投射物统一挂到世界层，避免已经发射出去的火球继续跟着 player 一起移动。
+func _get_projectiles_container() -> Node:
+	var current_scene := get_tree().current_scene
+	if current_scene == null:
+		return get_tree().root
+
+	var projectiles := current_scene.get_node_or_null(^"Projectiles")
+	if projectiles != null:
+		return projectiles
+
+	return current_scene
 
 # 当前攻击方向名仍然跟随真实输入方向，
 # 这样 attack 播放和方向资源的对应关系不会被顶层状态切换方式影响。
