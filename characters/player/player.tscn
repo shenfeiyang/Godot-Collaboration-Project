@@ -1,0 +1,622 @@
+[gd_scene format=3 uid="uid://cq1w62mx0khqr"]
+
+[ext_resource type="Script" uid="uid://cgchsium1d8h6" path="res://characters/player/player.gd" id="1_508ok"]
+[ext_resource type="Texture2D" uid="uid://ded7rhl2lo5jp" path="res://characters/player/textures/player.png" id="2_xxgcw"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_b886q"]
+radius = 18.0
+height = 70.0
+
+[sub_resource type="Animation" id="Animation_xxgcw"]
+length = 0.1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_on558"]
+resource_name = "attack_down"
+length = 0.7
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [210, 211, 212, 213, 214, 215, 216]
+}
+
+[sub_resource type="Animation" id="Animation_gqopd"]
+resource_name = "attack_right"
+length = 0.7
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [224, 225, 226, 227, 228, 229, 230]
+}
+
+[sub_resource type="Animation" id="Animation_fpo3a"]
+resource_name = "attack_right_down"
+length = 0.7
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [217, 218, 219, 220, 221, 222, 223]
+}
+
+[sub_resource type="Animation" id="Animation_kyfeq"]
+resource_name = "attack_right_up"
+length = 0.7
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [231, 232, 233, 234, 235, 236, 237]
+}
+
+[sub_resource type="Animation" id="Animation_icpky"]
+resource_name = "attack_up"
+length = 0.7
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [238, 239, 240, 241, 242, 243, 244]
+}
+
+[sub_resource type="Animation" id="Animation_exd8k"]
+resource_name = "idle_up"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [35, 36, 37, 38]
+}
+
+[sub_resource type="Animation" id="Animation_5dc8e"]
+resource_name = "idle_right"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [43, 44, 45, 46]
+}
+
+[sub_resource type="Animation" id="Animation_58jvb"]
+resource_name = "idle_right_down"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [39, 40, 41, 42]
+}
+
+[sub_resource type="Animation" id="Animation_8l73k"]
+resource_name = "idle_right_up"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [47, 48, 49, 50]
+}
+
+[sub_resource type="Animation" id="Animation_ixbpm"]
+resource_name = "idle_up"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [51, 52, 53, 54]
+}
+
+[sub_resource type="Animation" id="Animation_rpf03"]
+resource_name = "run_down"
+length = 0.6
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [105, 106, 107, 108, 109, 110]
+}
+
+[sub_resource type="Animation" id="Animation_x5dtk"]
+resource_name = "run_right"
+length = 0.6
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [117, 118, 119, 120, 121, 122]
+}
+
+[sub_resource type="Animation" id="Animation_aqrcq"]
+resource_name = "run_right_down"
+length = 0.6
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [111, 112, 113, 114, 115, 116]
+}
+
+[sub_resource type="Animation" id="Animation_d2agh"]
+resource_name = "run_right_up"
+length = 0.6
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [123, 124, 125, 126, 127, 128]
+}
+
+[sub_resource type="Animation" id="Animation_3t07l"]
+resource_name = "run_up"
+length = 0.6
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [129, 130, 131, 132, 133, 134]
+}
+
+[sub_resource type="Animation" id="Animation_c6leb"]
+resource_name = "walk_down"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [70, 71, 72, 73]
+}
+
+[sub_resource type="Animation" id="Animation_dirf7"]
+resource_name = "walk_right"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [78, 79, 80, 81]
+}
+
+[sub_resource type="Animation" id="Animation_idpv6"]
+resource_name = "walk_up"
+length = 0.4
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [86, 87, 88, 89]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_5dc8e"]
+_data = {
+&"RESET": SubResource("Animation_xxgcw"),
+&"attack_down": SubResource("Animation_on558"),
+&"attack_right": SubResource("Animation_gqopd"),
+&"attack_right_down": SubResource("Animation_fpo3a"),
+&"attack_right_up": SubResource("Animation_kyfeq"),
+&"attack_up": SubResource("Animation_icpky"),
+&"idle_down": SubResource("Animation_exd8k"),
+&"idle_right": SubResource("Animation_5dc8e"),
+&"idle_right_down": SubResource("Animation_58jvb"),
+&"idle_right_up": SubResource("Animation_8l73k"),
+&"idle_up": SubResource("Animation_ixbpm"),
+&"run_down": SubResource("Animation_rpf03"),
+&"run_right": SubResource("Animation_x5dtk"),
+&"run_right_down": SubResource("Animation_aqrcq"),
+&"run_right_up": SubResource("Animation_d2agh"),
+&"run_up": SubResource("Animation_3t07l"),
+&"walk_down": SubResource("Animation_c6leb"),
+&"walk_right": SubResource("Animation_dirf7"),
+&"walk_up": SubResource("Animation_idpv6")
+}
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_xxgcw"]
+animation = &"attack_down"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_exd8k"]
+animation = &"attack_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ixbpm"]
+animation = &"attack_right"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_d2agh"]
+animation = &"attack_right_down"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_fpo3a"]
+animation = &"attack_right_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_kyfeq"]
+animation = &"attack_right_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_5mkjs"]
+animation = &"attack_right_down"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_x5dtk"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_xxgcw")
+blend_point_0/pos = Vector2(0, 1)
+blend_point_1/node = SubResource("AnimationNodeAnimation_exd8k")
+blend_point_1/pos = Vector2(0, -1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_ixbpm")
+blend_point_2/pos = Vector2(1, 0)
+blend_point_3/node = SubResource("AnimationNodeAnimation_d2agh")
+blend_point_3/pos = Vector2(0.707, 0.707)
+blend_point_4/node = SubResource("AnimationNodeAnimation_fpo3a")
+blend_point_4/pos = Vector2(0.707, -0.707)
+blend_point_5/node = SubResource("AnimationNodeAnimation_fpo3a")
+blend_point_5/pos = Vector2(0.4, -0.5)
+blend_point_6/node = SubResource("AnimationNodeAnimation_kyfeq")
+blend_point_6/pos = Vector2(-0.4, -0.5)
+blend_point_7/node = SubResource("AnimationNodeAnimation_5mkjs")
+blend_point_7/pos = Vector2(-0.4, 0.5)
+blend_mode = 1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_3t07l"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_attack12"]
+advance_mode = 0
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_attack23"]
+advance_mode = 0
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_attack31"]
+advance_mode = 0
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_xxgcw"]
+states/Start/position = Vector2(165, 100)
+states/attack1/node = SubResource("AnimationNodeBlendSpace2D_x5dtk")
+states/attack1/position = Vector2(406, 36)
+states/attack2/node = SubResource("AnimationNodeBlendSpace2D_x5dtk")
+states/attack2/position = Vector2(406, 101)
+states/attack3/node = SubResource("AnimationNodeBlendSpace2D_x5dtk")
+states/attack3/position = Vector2(406, 171)
+transitions = ["Start", "attack1", SubResource("AnimationNodeStateMachineTransition_3t07l"), "attack1", "attack2", SubResource("AnimationNodeStateMachineTransition_attack12"), "attack2", "attack3", SubResource("AnimationNodeStateMachineTransition_attack23"), "attack3", "attack1", SubResource("AnimationNodeStateMachineTransition_attack31")]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_idle_down"]
+animation = &"idle_down"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_idle_up"]
+animation = &"idle_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_idle_right"]
+animation = &"idle_right"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_x5dtk"]
+animation = &"idle_right_down"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_3t07l"]
+animation = &"idle_right_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_on558"]
+animation = &"idle_right_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_gqopd"]
+animation = &"idle_right_down"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_exd8k"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_idle_down")
+blend_point_0/pos = Vector2(0, 1)
+blend_point_1/node = SubResource("AnimationNodeAnimation_idle_up")
+blend_point_1/pos = Vector2(0, -1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_idle_right")
+blend_point_2/pos = Vector2(1, 0)
+blend_point_3/node = SubResource("AnimationNodeAnimation_x5dtk")
+blend_point_3/pos = Vector2(0.707, 0.707)
+blend_point_4/node = SubResource("AnimationNodeAnimation_3t07l")
+blend_point_4/pos = Vector2(0.707, -0.707)
+blend_point_5/node = SubResource("AnimationNodeAnimation_3t07l")
+blend_point_5/pos = Vector2(0.5, -0.5)
+blend_point_6/node = SubResource("AnimationNodeAnimation_on558")
+blend_point_6/pos = Vector2(-0.5, -0.5)
+blend_point_7/node = SubResource("AnimationNodeAnimation_gqopd")
+blend_point_7/pos = Vector2(-0.5, 0.5)
+blend_mode = 1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_idle"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_exd8k"]
+states/BlendSpace2D/node = SubResource("AnimationNodeBlendSpace2D_exd8k")
+states/BlendSpace2D/position = Vector2(418, 100)
+states/Start/position = Vector2(199, 100)
+transitions = ["Start", "BlendSpace2D", SubResource("AnimationNodeStateMachineTransition_idle")]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_c6leb"]
+animation = &"run_down"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_dirf7"]
+animation = &"run_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_rpf03"]
+animation = &"run_right"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_icpky"]
+animation = &"run_right_down"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_58jvb"]
+animation = &"run_right_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_8l73k"]
+animation = &"run_right_up"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_aqrcq"]
+animation = &"run_right_down"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_3t07l"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_c6leb")
+blend_point_0/pos = Vector2(0, 1)
+blend_point_1/node = SubResource("AnimationNodeAnimation_dirf7")
+blend_point_1/pos = Vector2(0, -1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_rpf03")
+blend_point_2/pos = Vector2(1, 0)
+blend_point_3/node = SubResource("AnimationNodeAnimation_icpky")
+blend_point_3/pos = Vector2(0.707, 0.707)
+blend_point_4/node = SubResource("AnimationNodeAnimation_58jvb")
+blend_point_4/pos = Vector2(0.707, -0.707)
+blend_point_5/node = SubResource("AnimationNodeAnimation_58jvb")
+blend_point_5/pos = Vector2(0.5, -0.5)
+blend_point_6/node = SubResource("AnimationNodeAnimation_8l73k")
+blend_point_6/pos = Vector2(-0.5, -0.5)
+blend_point_7/node = SubResource("AnimationNodeAnimation_aqrcq")
+blend_point_7/pos = Vector2(-0.5, 0.6)
+blend_mode = 1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_on558"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_5dc8e"]
+states/BlendSpace2D/node = SubResource("AnimationNodeBlendSpace2D_3t07l")
+states/BlendSpace2D/position = Vector2(396, 100)
+transitions = ["Start", "BlendSpace2D", SubResource("AnimationNodeStateMachineTransition_on558")]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_xxgcw"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_exd8k"]
+advance_mode = 2
+advance_condition = &"to_run"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_5dc8e"]
+advance_mode = 2
+advance_condition = &"to_idle"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_ixbpm"]
+advance_mode = 2
+advance_condition = &"to_attack"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_to_attack_from_run"]
+advance_mode = 2
+advance_condition = &"to_attack"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_c6leb"]
+advance_mode = 2
+advance_condition = &"to_idle"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_to_run_from_attack"]
+advance_mode = 2
+advance_condition = &"to_run"
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_ixbpm"]
+states/Start/position = Vector2(211, 100)
+states/attack/node = SubResource("AnimationNodeStateMachine_xxgcw")
+states/attack/position = Vector2(671, 110)
+states/idle/node = SubResource("AnimationNodeStateMachine_exd8k")
+states/idle/position = Vector2(433, 173)
+states/run/node = SubResource("AnimationNodeStateMachine_5dc8e")
+states/run/position = Vector2(433, 33)
+transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_xxgcw"), "idle", "run", SubResource("AnimationNodeStateMachineTransition_exd8k"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_5dc8e"), "idle", "attack", SubResource("AnimationNodeStateMachineTransition_ixbpm"), "run", "attack", SubResource("AnimationNodeStateMachineTransition_to_attack_from_run"), "attack", "idle", SubResource("AnimationNodeStateMachineTransition_c6leb"), "attack", "run", SubResource("AnimationNodeStateMachineTransition_to_run_from_attack")]
+graph_offset = Vector2(103.49598, -39.192257)
+
+[sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_c6leb"]
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_b886q"]
+graph_offset = Vector2(-88.46628, 127.59714)
+nodes/output/position = Vector2(720, 100)
+nodes/StateMachine/node = SubResource("AnimationNodeStateMachine_ixbpm")
+nodes/StateMachine/position = Vector2(120, 100)
+nodes/TimeScale/node = SubResource("AnimationNodeTimeScale_c6leb")
+nodes/TimeScale/position = Vector2(480, 100)
+node_connections = [&"output", 0, &"TimeScale", &"TimeScale", 0, &"StateMachine"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_xxgcw"]
+
+[node name="Player" type="CharacterBody2D" unique_id=763065208]
+script = ExtResource("1_508ok")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=629727694]
+position = Vector2(0, -48)
+scale = Vector2(3, 3)
+texture = ExtResource("2_xxgcw")
+hframes = 35
+vframes = 7
+
+[node name="BodyCollision" type="CollisionShape2D" parent="." unique_id=306953644]
+position = Vector2(0, -35)
+shape = SubResource("CapsuleShape2D_b886q")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1867699289]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=966971098]
+libraries/ = SubResource("AnimationLibrary_5dc8e")
+
+[node name="AnimationTree" type="AnimationTree" parent="." unique_id=550244677]
+tree_root = SubResource("AnimationNodeBlendTree_b886q")
+advance_expression_base_node = NodePath("../AnimationPlayer")
+anim_player = NodePath("../AnimationPlayer")
+parameters/StateMachine/conditions/to_attack = false
+parameters/StateMachine/conditions/to_idle = false
+parameters/StateMachine/conditions/to_run = false
+parameters/StateMachine/attack/attack1/blend_position = Vector2(0.0019267797, 0.97156394)
+parameters/StateMachine/attack/attack2/blend_position = Vector2(0, 0)
+parameters/StateMachine/attack/attack3/blend_position = Vector2(0, 0)
+parameters/StateMachine/idle/BlendSpace2D/blend_position = Vector2(0.34296727, -0.38388622)
+parameters/StateMachine/run/BlendSpace2D/blend_position = Vector2(0, 0)
+parameters/TimeScale/scale = 1.0
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=57309262]
+
+[node name="HitBox" type="Area2D" parent="." unique_id=55099822]
+position = Vector2(0, -35)
+
+[node name="HitCollision" type="CollisionShape2D" parent="HitBox" unique_id=232537411]
+shape = SubResource("CapsuleShape2D_b886q")
+
+[node name="AttackBox" type="Area2D" parent="." unique_id=1160358922]
+
+[node name="AttackCollision" type="CollisionShape2D" parent="AttackBox" unique_id=572602341]
+shape = SubResource("CircleShape2D_xxgcw")

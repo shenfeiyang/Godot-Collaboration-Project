@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" ls-tree -r --name-only HEAD -- \"characters/player\")",
+      "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" log --oneline -- \"characters/player/player.tscn\")",
+      "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" show HEAD:\"characters/player/player.tscn\")",
+      "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" ls-tree -r --name-only HEAD)",
+      "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" branch -a)",
+      "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" remote -v)"
+    ]
+  }
+}
