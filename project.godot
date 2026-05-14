@@ -15,9 +15,9 @@ run/main_scene="uid://b60p78vrm4xgc"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
-[editor_plugins]
+[display]
 
-enabled=PackedStringArray("res://addons/virtual_joystick/plugin.cfg")
+window/stretch/mode="canvas_items"
 
 [input]
 
@@ -70,3 +70,4 @@ attack3={
 
 textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
+environment/defaults/default_clear_color=Color(0.05882353, 0.05882353, 0.05882353, 1)
