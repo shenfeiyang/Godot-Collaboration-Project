@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://cq1w62mx0khqr" path="res://characters/player/player.tscn" id="3_lnu2h"]
 [ext_resource type="Script" uid="uid://c3hpp5tjpdpk2" path="res://scenes/combat_manager.gd" id="4_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://0vd6iach35gv" path="res://abilities/bullet/bullet.tscn" id="5_iywne"]
+[ext_resource type="PackedScene" uid="uid://bsie3dead3d1t" path="res://characters/enemies/enemy.tscn" id="6_p57ef"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yqjtg"]
 texture = ExtResource("1_uwrxv")
@@ -78,6 +79,21 @@ texture_region_size = Vector2i(16, 32)
 [sub_resource type="TileSet" id="TileSet_iywne"]
 sources/0 = SubResource("TileSetAtlasSource_lbhrr")
 
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_p57ef"]
+b = Vector2(800, 0)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_u5sy4"]
+a = Vector2(800, 800)
+b = Vector2(0, 800)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_gee14"]
+a = Vector2(0, 800)
+b = Vector2(0, 0)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_0tnpc"]
+a = Vector2(800, 0)
+b = Vector2(800, 800)
+
 [node name="Game" type="Node2D" unique_id=1420460005]
 
 [node name="GroundTileMapLayer" type="TileMapLayer" parent="." unique_id=1201712714]
@@ -88,8 +104,34 @@ tile_set = SubResource("TileSet_lnu2h")
 tile_map_data = PackedByteArray("AAAAABMAAAAAAAAAAAAAABIAAAAAAAAAAAAAABQAAAAAAAAAAAAAABUAAAAAAAAAAAAxABsAAAAAAAAAAAAxABwAAAAAAAAAAAAxAB0AAAAAAAAAAAAxAB4AAAAAAAAAAAA=")
 tile_set = SubResource("TileSet_iywne")
 
+[node name="WorldBounds" type="Node2D" parent="." unique_id=1879677339]
+
+[node name="TopBoundary" type="StaticBody2D" parent="WorldBounds" unique_id=1639915638]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/TopBoundary" unique_id=274783567]
+shape = SubResource("SegmentShape2D_p57ef")
+
+[node name="BottomBoundary" type="StaticBody2D" parent="WorldBounds" unique_id=210019062]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/BottomBoundary" unique_id=97817503]
+shape = SubResource("SegmentShape2D_u5sy4")
+
+[node name="LeftBoundary" type="StaticBody2D" parent="WorldBounds" unique_id=628883665]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/LeftBoundary" unique_id=1463051660]
+shape = SubResource("SegmentShape2D_gee14")
+
+[node name="RightBoundary" type="StaticBody2D" parent="WorldBounds" unique_id=1583618051]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/RightBoundary" unique_id=773729923]
+shape = SubResource("SegmentShape2D_0tnpc")
+
 [node name="Player" parent="." unique_id=763065208 instance=ExtResource("3_lnu2h")]
 position = Vector2(251, 227)
+fire_mode = 3
+
+[node name="Enemy" parent="." unique_id=1746237704 instance=ExtResource("6_p57ef")]
+position = Vector2(302, 287)
 
 [node name="BulletContainer" type="Node2D" parent="." unique_id=587186071]
 

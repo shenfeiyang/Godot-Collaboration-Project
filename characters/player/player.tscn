@@ -343,14 +343,14 @@ script = ExtResource("1_508ok")
 
 [node name="BodySprite" type="AnimatedSprite2D" parent="." unique_id=635492716]
 sprite_frames = SubResource("SpriteFrames_jepfe")
-animation = &"normal_right"
+animation = &"normal_down"
 autoplay = "normal_right"
 
 [node name="ArmedEffectSprite" type="AnimatedSprite2D" parent="." unique_id=87474286]
 visible = false
 sprite_frames = SubResource("SpriteFrames_cosaq")
 autoplay = "default"
-frame_progress = 0.056308962
+frame_progress = 0.20045704
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1669890856]
 position = Vector2(0, 3)
