@@ -1,6 +1,9 @@
 extends CharacterBody2D
 class_name Player
 
+const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
+const PHYSICS_LAYERS = preload("res://scripts/physics_layers.gd")
+
 # 默认动画前缀
 const NORMAL_ANIMATION_PREFIX := &"normal"
 
@@ -13,15 +16,21 @@ var facing_suffix: StringName = &"right"
 # 玩家移动速度，单位是像素/秒。
 @export var move_speed: float = 120.0
 # 角色默认使用的弹幕模式，供未指定按键模式时回退使用。
-@export_enum("单发", "扇形", "环形", "随机散射", "波浪") var fire_mode: int = 0
+@export_enum("单发", "扇形", "环形", "随机散射", "波浪", "螺旋") var fire_mode: int = SHARED_ENUMS.FireMode.SINGLE
 # J 键使用的弹幕模式。
-@export_enum("单发", "扇形", "环形", "随机散射", "波浪") var attack1_fire_mode: int = 0
+@export_enum("单发", "扇形", "环形", "随机散射", "波浪", "螺旋") var attack1_fire_mode: int = SHARED_ENUMS.FireMode.SINGLE
 # U 键使用的弹幕模式。
-@export_enum("单发", "扇形", "环形", "随机散射", "波浪") var attack2_fire_mode: int = 1
+@export_enum("单发", "扇形", "环形", "随机散射", "波浪", "螺旋") var attack2_fire_mode: int = SHARED_ENUMS.FireMode.FAN
 # I 键使用的弹幕模式。
-@export_enum("单发", "扇形", "环形", "随机散射", "波浪") var attack3_fire_mode: int = 2
+@export_enum("单发", "扇形", "环形", "随机散射", "波浪", "螺旋") var attack3_fire_mode: int = SHARED_ENUMS.FireMode.RING
 # 当前角色所属阵营，供子弹忽略友军与自身时读取。
-@export_enum("玩家", "怪物", "中立") var faction: int = 0
+@export_enum("玩家", "怪物", "中立") var faction: int = SHARED_ENUMS.Faction.PLAYER
+# 按住攻击键时，两次开火之间的最小间隔。
+@export_range(0.01, 2.0, 0.01) var attack_interval: float = 0.15
+# 与怪物接近时的轻推强度。
+@export var soft_push_strength: float = 14.0
+# 与怪物发生软推时的作用距离。
+@export var soft_push_radius: float = 20.0
 
 # 当前朝向
 var facing_direction := Vector2.RIGHT  # 默认朝下
@@ -36,32 +45,60 @@ var muzzle_offsets := {
 	"right": Vector2(10.0, 5.5),
 }
 
+var attack_cooldown_remaining: float = 0.0
+
 func _ready() -> void:
+	collision_layer = PHYSICS_LAYERS.PLAYER_BODY_LAYER_BIT
+	collision_mask = PHYSICS_LAYERS.PLAYER_BODY_MASK
 	_update_animation()
 
 func _physics_process(delta: float) -> void:
 	# 读取四个方向输入，并得到标准化后的八向输入向量
 	var move_input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	
+
+	# 先关闭玩家侧软推，避免与怪物离散等待/让行逻辑互相拉扯。
 	# CharactorBody2D 通过 velocity 配合 move_and_slide() 完成移动
 	velocity = move_input * move_speed
 	move_and_slide()
-	
+
 	if move_input != Vector2.ZERO:
 		# 保存当前朝向
 		facing_direction = move_input
-	
+
 	facing_suffix = _vector_to_facing_suffix(facing_direction)
 	_update_animation()
+	_handle_attack_input(delta)
+
+func _get_soft_push_offset() -> Vector2:
+	if soft_push_strength <= 0.0 or soft_push_radius <= 0.0 or get_parent() == null:
+		return Vector2.ZERO
+
+	var push := Vector2.ZERO
+	for sibling in get_parent().get_children():
+		if sibling == self:
+			continue
+		if not sibling is CharacterBody2D:
+			continue
+		if sibling.collision_layer != PHYSICS_LAYERS.ENEMY_BODY_LAYER_BIT:
+			continue
+
+		var offset: Vector2 = global_position - sibling.global_position
+		var distance: float = offset.length()
+		if distance <= 0.0 or distance > soft_push_radius:
+			continue
+
+		push += offset.normalized() * (1.0 - distance / soft_push_radius)
+
+	return push.normalized() * soft_push_strength if push != Vector2.ZERO else Vector2.ZERO
 
 # 根据当前朝向拼出动画名，并在动画实际变化时再切换播放
 func _update_animation() -> void:
 	var animation_name := StringName("%s_%s" % [NORMAL_ANIMATION_PREFIX, facing_suffix])
-	
+
 	if not body_sprite.sprite_frames.has_animation(animation_name):
 		push_warning("Missing player animation: %s" % animation_name)
 		return
-		
+
 	if body_sprite.animation != animation_name:
 		body_sprite.play(animation_name)
 
@@ -70,24 +107,33 @@ func _update_animation() -> void:
 func _vector_to_facing_suffix(direction: Vector2) -> StringName:
 	if abs(direction.x) >= abs(direction.y):
 		return &"right" if direction.x > 0.0 else &"left"
-	
+
 	return &"down" if direction.y > 0.0 else &"up"
 
 # 监听按键
-func _input(event: InputEvent) -> void:
-	# J 键触发 attack1，并使用对应导出的弹幕模式。
-	if event.is_action_pressed("attack1"):
-		_try_attack(attack1_fire_mode)
+func _handle_attack_input(delta: float) -> void:
+	if attack_cooldown_remaining > 0.0:
+		attack_cooldown_remaining = max(attack_cooldown_remaining - delta, 0.0)
+
+	var selected_fire_mode := _get_pressed_attack_fire_mode()
+	if selected_fire_mode == -1:
+		return
+	if attack_cooldown_remaining > 0.0:
 		return
 
-	# U 键触发 attack2，并使用对应导出的弹幕模式。
-	if event.is_action_pressed("attack2"):
-		_try_attack(attack2_fire_mode)
-		return
+	_try_attack(selected_fire_mode)
+	attack_cooldown_remaining = attack_interval
 
-	# I 键触发 attack3，并使用对应导出的弹幕模式。
-	if event.is_action_pressed("attack3"):
-		_try_attack(attack3_fire_mode)
+func _get_pressed_attack_fire_mode() -> int:
+	# 按键优先级按 attack1 -> attack2 -> attack3 处理，避免同帧多次触发。
+	if Input.is_action_pressed("attack1"):
+		return attack1_fire_mode
+	if Input.is_action_pressed("attack2"):
+		return attack2_fire_mode
+	if Input.is_action_pressed("attack3"):
+		return attack3_fire_mode
+
+	return -1
 
 # 攻击
 func _try_attack(selected_fire_mode: int = fire_mode) -> void:

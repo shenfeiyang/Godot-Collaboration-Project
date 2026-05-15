@@ -62,6 +62,25 @@ attack3={
 ]
 }
 
+[layer_names]
+
+2d_physics/layer_1="世界地形"
+2d_physics/layer_2="玩家本体"
+2d_physics/layer_3="怪物本体"
+2d_physics/layer_4="玩家子弹"
+2d_physics/layer_5="敌人子弹"
+2d_physics/layer_6="拾取交互"
+2d_physics/layer_7="感知触发"
+2d_physics/layer_8="陷阱中立伤害"
+2d_physics/layer_9="预留_角色受击框"
+2d_physics/layer_10="预留_角色攻击框"
+2d_physics/layer_11="预留_召唤物"
+2d_physics/layer_12="预留_宠物友军"
+2d_physics/layer_13="预留_机关"
+2d_physics/layer_14="预留_特殊弹幕"
+2d_physics/layer_15="预留_过场检测"
+2d_physics/layer_16="预留_调试专用"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

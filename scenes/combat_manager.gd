@@ -1,13 +1,7 @@
 extends Node
 
-# 统一定义当前项目可切换的几种发射模式，方便 Player、Enemy 和管理器共用同一套编号。
-enum FireMode {
-	SINGLE,
-	FAN,
-	RING,
-	RANDOM_SCATTER,
-	WAVE,
-}
+const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
+const FIRE_PATTERN_RESOLVER = preload("res://scenes/fire_pattern_resolver.gd")
 
 # 发射请求里约定使用的字段名，后续怪物或技能节点也按这套键名提交数据。
 const REQUEST_SPAWN_POSITION := "spawn_position"
@@ -20,23 +14,30 @@ const REQUEST_SPEED_OVERRIDE := "speed_override"
 const REQUEST_DAMAGE := "damage"
 const REQUEST_EXTRA := "extra"
 
+const SPIRAL_STATE_ANGLE_DEG := "spiral_state_angle_deg"
+
 # 子弹场景资源，由场景面板指定具体要生成的子弹预制体。
+@export_group("基础配置")
 @export var bullet_tscn: PackedScene
 # 作为兜底配置使用的默认发射模式；当发射请求未提供模式时，回退到这里。
-@export var current_fire_mode: FireMode = FireMode.SINGLE
+@export_enum("单发", "扇形", "环形", "随机散射", "波浪", "螺旋") var current_fire_mode: int = SHARED_ENUMS.FireMode.SINGLE
 # 扇形模式下生成的子弹数量。
+@export_group("扇形模式")
 @export_range(1, 32, 1) var fan_bullet_count: int = 5
 # 扇形模式下整个扇面的总张角，单位为度。
 @export_range(0.0, 360.0, 1.0) var fan_total_angle_deg: float = 60.0
 # 环形模式下一圈生成的子弹数量。
+@export_group("环形模式")
 @export_range(1, 64, 1) var ring_bullet_count: int = 8
 # 环形模式整体额外旋转的角度，便于调节第一颗子弹的起始朝向。
 @export_range(0.0, 360.0, 1.0) var ring_angle_offset_deg: float = 0.0
 # 随机散射模式下一次生成的子弹数量。
+@export_group("随机散射模式")
 @export_range(1, 32, 1) var random_bullet_count: int = 5
 # 随机散射模式下，单颗子弹相对基础朝向允许偏转的半角范围。
 @export_range(0.0, 180.0, 1.0) var random_half_angle_deg: float = 20.0
 # 波浪模式下一次生成的子弹数量。
+@export_group("波浪模式")
 @export_range(1, 32, 1) var wave_bullet_count: int = 7
 # 波浪模式基础分布覆盖的总角度范围，单位为度。
 @export_range(0.0, 360.0, 1.0) var wave_total_angle_deg: float = 60.0
@@ -44,10 +45,19 @@ const REQUEST_EXTRA := "extra"
 @export_range(0.0, 180.0, 1.0) var wave_amplitude_deg: float = 10.0
 # 波浪模式在整批子弹中的起伏频率。
 @export_range(0.0, 8.0, 0.1) var wave_frequency: float = 1.0
+# 螺旋模式下一次生成的子弹数量。
+@export_group("螺旋模式")
+@export_range(1, 16, 1) var spiral_bullet_count: int = 1
+# 螺旋模式每次开火后推进的角度步进，单位为度。
+@export_range(0.0, 360.0, 1.0) var spiral_step_angle_deg: float = 18.0
+# 螺旋模式初始附加角度，便于整体旋转起始方向。
+@export_range(0.0, 360.0, 1.0) var spiral_angle_offset_deg: float = 0.0
 # 子弹统一挂到独立容器下，避免和角色或地块节点混在一起。
-@onready var bullet_container: Node2D = $"../BulletContainer"
+@onready var bullet_container: Node2D = $"../Entities/BulletContainer"
 # 当前场景里的玩家节点暂时仍作为默认发射者接入点；后续怪物可直接调用 request_fire。
-@onready var player = get_tree().current_scene.get_node("Player")
+@onready var player = get_tree().current_scene.get_node("Entities/Player")
+
+var current_spiral_angle_deg: float = 0.0
 
 func _ready() -> void:
 	# 现阶段仍监听玩家攻击信号，但真正的发射逻辑已经收口到 request_fire()。
@@ -60,8 +70,12 @@ func _on_player_attack(muzzle_position: Vector2, direction: Vector2, selected_fi
 func request_fire(request: Dictionary) -> void:
 	# 所有发射者最终都走这个入口，后续怪物、陷阱或技能节点也复用这条链路。
 	var spawn_position: Vector2 = request.get(REQUEST_SPAWN_POSITION, Vector2.ZERO)
-	for shot_direction in _build_shot_directions(_get_request_direction(request), _resolve_fire_mode(request)):
+	var fire_mode := int(_resolve_fire_mode(request))
+	var pattern_config := _build_pattern_config(fire_mode)
+	for shot_direction in FIRE_PATTERN_RESOLVER.build_shot_directions(_get_request_direction(request), fire_mode, pattern_config):
 		_spawn_bullet(request, spawn_position, shot_direction)
+	if fire_mode == SHARED_ENUMS.FireMode.SPIRAL:
+		current_spiral_angle_deg = fposmod(current_spiral_angle_deg + spiral_step_angle_deg, 360.0)
 
 func request_fire_from_source(source: Node, spawn_position: Vector2, direction: Vector2, selected_fire_mode: int = -1, extra: Dictionary = {}) -> void:
 	# 给未来的怪物或其他发射者预留一个更直接的调用入口，避免都自己手拼请求字典。
@@ -84,38 +98,19 @@ func _build_fire_request(source: Node, spawn_position: Vector2, direction: Vecto
 
 	return request
 
-func _build_shot_directions(base_direction: Vector2, fire_mode: FireMode) -> Array[Vector2]:
-	# 所有模式都基于单位方向计算；若外部意外传入零向量，则回退到向右发射。
-	var normalized_direction := base_direction.normalized()
-	if normalized_direction == Vector2.ZERO:
-		normalized_direction = Vector2.RIGHT
-
-	# 根据请求最终解析出的模式展开多方向结果。
-	match fire_mode:
-		FireMode.FAN:
-			return _build_fan_directions(normalized_direction)
-		FireMode.RING:
-			return _build_ring_directions(normalized_direction)
-		FireMode.RANDOM_SCATTER:
-			return _build_random_scatter_directions(normalized_direction)
-		FireMode.WAVE:
-			return _build_wave_directions(normalized_direction)
-		_:
-			return _build_single_directions(normalized_direction)
-
-func _resolve_fire_mode(request: Dictionary) -> FireMode:
+func _resolve_fire_mode(request: Dictionary) -> int:
 	# 请求里显式指定的模式优先级最高；未指定时再回退到发射者默认模式。
 	var selected_fire_mode: int = int(request.get(REQUEST_FIRE_MODE, -1))
-	if selected_fire_mode >= FireMode.SINGLE and selected_fire_mode <= FireMode.WAVE:
-		return selected_fire_mode as FireMode
+	if selected_fire_mode >= SHARED_ENUMS.FireMode.SINGLE and selected_fire_mode <= SHARED_ENUMS.FireMode.SPIRAL:
+		return selected_fire_mode
 
 	return _get_source_fire_mode(request)
 
-func _get_source_fire_mode(request: Dictionary) -> FireMode:
+func _get_source_fire_mode(request: Dictionary) -> int:
 	# 发射者节点上导出的 fire_mode 作为主要数据源；若不存在该字段，再回退到管理器默认值。
 	var source = request.get(REQUEST_SOURCE, null)
 	if source != null and "fire_mode" in source:
-		return source.fire_mode as FireMode
+		return int(source.fire_mode)
 
 	return current_fire_mode
 
@@ -128,66 +123,30 @@ func _get_request_direction(request: Dictionary) -> Vector2:
 
 	return normalized_direction
 
-func _build_single_directions(base_direction: Vector2) -> Array[Vector2]:
-	# 单发模式只保留基础朝向本身。
-	return [base_direction]
+func _build_pattern_config(fire_mode: int) -> Dictionary:
+	# 统一从 Inspector 导出的参数组装模式配置，交给独立解析器计算方向。
+	return {
+		FIRE_PATTERN_RESOLVER.CONFIG_FAN_BULLET_COUNT: fan_bullet_count,
+		FIRE_PATTERN_RESOLVER.CONFIG_FAN_TOTAL_ANGLE_DEG: fan_total_angle_deg,
+		FIRE_PATTERN_RESOLVER.CONFIG_RING_BULLET_COUNT: ring_bullet_count,
+		FIRE_PATTERN_RESOLVER.CONFIG_RING_ANGLE_OFFSET_DEG: ring_angle_offset_deg,
+		FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_BULLET_COUNT: random_bullet_count,
+		FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_HALF_ANGLE_DEG: random_half_angle_deg,
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_BULLET_COUNT: wave_bullet_count,
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_TOTAL_ANGLE_DEG: wave_total_angle_deg,
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_AMPLITUDE_DEG: wave_amplitude_deg,
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_FREQUENCY: wave_frequency,
+		FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_BULLET_COUNT: spiral_bullet_count,
+		FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_ANGLE_OFFSET_DEG: spiral_angle_offset_deg,
+		SPIRAL_STATE_ANGLE_DEG: _get_spiral_state_angle_deg(fire_mode),
+	}
 
-func _build_fan_directions(base_direction: Vector2) -> Array[Vector2]:
-	# 扇形模式复用均匀分布函数，在总张角内展开多颗子弹。
-	return _build_even_spread_directions(base_direction, fan_bullet_count, fan_total_angle_deg)
+func _get_spiral_state_angle_deg(fire_mode: int) -> float:
+	# 只有螺旋模式才使用持续推进的角度状态，其他模式统一视为 0。
+	if fire_mode != SHARED_ENUMS.FireMode.SPIRAL:
+		return 0.0
 
-func _build_ring_directions(base_direction: Vector2) -> Array[Vector2]:
-	# 环形模式围绕完整 360 度等分方向。
-	var directions: Array[Vector2] = []
-	var count: int = max(ring_bullet_count, 1)
-	var step_angle: float = 360.0 / float(count)
-
-	for index in count:
-		var angle_deg: float = ring_angle_offset_deg + step_angle * index
-		directions.append(_rotate_direction(base_direction, angle_deg))
-
-	return directions
-
-func _build_random_scatter_directions(base_direction: Vector2) -> Array[Vector2]:
-	# 随机散射模式在基础朝向两侧随机偏转，让每次开火都有离散感。
-	var directions: Array[Vector2] = []
-	var count: int = max(random_bullet_count, 1)
-
-	for _index in count:
-		var angle_deg: float = randf_range(-random_half_angle_deg, random_half_angle_deg)
-		directions.append(_rotate_direction(base_direction, angle_deg))
-
-	return directions
-
-func _build_wave_directions(base_direction: Vector2) -> Array[Vector2]:
-	# 波浪模式先按扇形铺开，再对每颗子弹追加正弦角度偏移，形成起伏排列。
-	var directions: Array[Vector2] = []
-	var count: int = max(wave_bullet_count, 1)
-	if count == 1:
-		return [base_direction]
-
-	for index in count:
-		var ratio: float = float(index) / float(count - 1)
-		var base_offset: float = lerpf(-wave_total_angle_deg * 0.5, wave_total_angle_deg * 0.5, ratio)
-		var wave_offset: float = sin(ratio * TAU * wave_frequency) * wave_amplitude_deg
-		directions.append(_rotate_direction(base_direction, base_offset + wave_offset))
-
-	return directions
-
-func _build_even_spread_directions(base_direction: Vector2, bullet_count: int, total_angle_deg: float) -> Array[Vector2]:
-	# 通用均匀分布函数，给扇形等模式复用；数量为 1 时直接退化成单发。
-	var directions: Array[Vector2] = []
-	var count: int = max(bullet_count, 1)
-	if count == 1:
-		return [base_direction]
-
-	var start_angle: float = -total_angle_deg * 0.5
-	var step_angle: float = total_angle_deg / float(count - 1)
-	for index in count:
-		var angle_deg: float = start_angle + step_angle * index
-		directions.append(_rotate_direction(base_direction, angle_deg))
-
-	return directions
+	return current_spiral_angle_deg
 
 func _spawn_bullet(request: Dictionary, spawn_position: Vector2, shot_direction: Vector2) -> void:
 	# 所有子弹都通过统一入口实例化，后续接对象池时只需要替换这一层。
@@ -239,7 +198,3 @@ func _build_bullet_setup_data(request: Dictionary) -> Dictionary:
 		setup_data[REQUEST_EXTRA] = request[REQUEST_EXTRA]
 
 	return setup_data
-
-func _rotate_direction(direction: Vector2, angle_deg: float) -> Vector2:
-	# 对基础方向做角度旋转，并统一返回单位向量，避免不同模式产生速度差异。
-	return direction.rotated(deg_to_rad(angle_deg)).normalized()

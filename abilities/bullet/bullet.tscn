@@ -12,6 +12,8 @@ radius = 2.0
 
 [node name="Bullet" type="Area2D" unique_id=1456783319]
 script = ExtResource("1_5on2p")
+collision_layer = 0
+collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1929406379]
 texture = SubResource("AtlasTexture_5on2p")

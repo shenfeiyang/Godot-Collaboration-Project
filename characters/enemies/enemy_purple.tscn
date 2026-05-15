@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://d3f4hgqvc22ri"]
+
+[ext_resource type="Texture2D" uid="uid://b6i0v4n64tx4t" path="res://resources/texture/源石虫.png" id="1_68cqi"]
+[ext_resource type="Script" uid="uid://coy5apupifc10" path="res://characters/enemies/enemy.gd" id="1_gi1at"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gi1at"]
+atlas = ExtResource("1_68cqi")
+region = Rect2(0, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ohyql"]
+atlas = ExtResource("1_68cqi")
+region = Rect2(32, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g8kna"]
+atlas = ExtResource("1_68cqi")
+region = Rect2(64, 64, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_uli2f"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gi1at")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ohyql")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g8kna")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_n06ii"]
+radius = 6.0
+
+[node name="EnemyPurple" type="CharacterBody2D" unique_id=2132130365]
+collision_layer = 4
+script = ExtResource("1_gi1at")
+faction = null
+move_speed = null
+stop_distance = null
+slow_down_distance = null
+obstacle_probe_distance = null
+obstacle_probe_radius = null
+wall_follow_lock_duration = null
+velocity_smoothing = null
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1958128921]
+sprite_frames = SubResource("SpriteFrames_uli2f")
+autoplay = "default"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2060896900]
+shape = SubResource("CircleShape2D_n06ii")

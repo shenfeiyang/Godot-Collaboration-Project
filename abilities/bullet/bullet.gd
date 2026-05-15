@@ -1,22 +1,16 @@
 extends Area2D
 class_name Bullet
 
+const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
+const PHYSICS_LAYERS = preload("res://scripts/physics_layers.gd")
+
 # 子弹命中后统一向外发出事件，方便未来接伤害层或命中特效。
 signal hit_registered(hit_data: Dictionary)
 
-# 标记碰撞物理层级。
-const WORLD_COLLISION_MASK := 1
 # 与发射请求约定保持一致，供初始化时读取单颗子弹的覆盖参数。
 const SETUP_SPEED_OVERRIDE := "speed_override"
 const SETUP_DAMAGE := "damage"
 const SETUP_EXTRA := "extra"
-
-# 子弹所属阵营，用于区分玩家弹和怪物弹。
-enum Faction {
-	PLAYER,
-	ENEMY,
-	NEUTRAL,
-}
 
 # 子弹基础飞行速度，单位为像素/秒。
 @export var speed: float = 320.0
@@ -28,7 +22,7 @@ var direction: Vector2 = Vector2.RIGHT
 # 生成这颗子弹的发射者，用于忽略自身碰撞。
 var source: Node = null
 # 子弹所属阵营，默认视为中立。
-var faction: Faction = Faction.NEUTRAL
+var faction: SHARED_ENUMS.Faction = SHARED_ENUMS.Faction.NEUTRAL
 # 本次飞行实际使用的速度，便于单次发射做覆盖而不污染默认配置。
 var current_speed: float = 0.0
 # 剩余存活时间，递减到 0 后自动销毁。
@@ -43,7 +37,7 @@ func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 	body_entered.connect(_on_body_entered)
 
-func setup(initial_direction: Vector2, initial_source: Node = null, initial_faction: Faction = Faction.NEUTRAL, setup_data: Dictionary = {}) -> void:
+func setup(initial_direction: Vector2, initial_source: Node = null, initial_faction: SHARED_ENUMS.Faction = SHARED_ENUMS.Faction.NEUTRAL, setup_data: Dictionary = {}) -> void:
 	# 由外部在生成子弹后调用，统一注入方向、发射者、阵营与本次发射的覆盖参数。
 	source = initial_source
 	faction = initial_faction
@@ -51,6 +45,7 @@ func setup(initial_direction: Vector2, initial_source: Node = null, initial_fact
 	remaining_lifetime = max_lifetime
 	shot_context = setup_data.duplicate(true)
 	has_resolved_hit = false
+	_configure_collision_layers()
 
 	if initial_direction != Vector2.ZERO:
 		direction = initial_direction.normalized()
@@ -89,7 +84,7 @@ func _find_collision_target(from_position: Vector2, to_position: Vector2) -> Var
 	var query := PhysicsRayQueryParameters2D.create(
 		from_position,
 		to_position,
-		WORLD_COLLISION_MASK
+		collision_mask
 	)
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
@@ -98,6 +93,7 @@ func _find_collision_target(from_position: Vector2, to_position: Vector2) -> Var
 	if source is CollisionObject2D:
 		query.exclude = [source.get_rid()]
 
+	# 发射射线并处理结果，忽略不应该命中的目标。
 	var hit_result: Dictionary = space_state.intersect_ray(query)
 	if hit_result.is_empty():
 		return null
@@ -164,3 +160,7 @@ func _has_same_faction(target: Variant) -> bool:
 		return false
 
 	return int(target.faction) == int(faction)
+
+func _configure_collision_layers() -> void:
+	collision_layer = PHYSICS_LAYERS.get_bullet_layer_bit(int(faction))
+	collision_mask = PHYSICS_LAYERS.get_bullet_hit_mask(int(faction))

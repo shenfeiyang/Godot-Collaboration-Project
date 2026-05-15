@@ -1,18 +1,18 @@
 [gd_scene format=3 uid="uid://bsie3dead3d1t"]
 
-[ext_resource type="Texture2D" uid="uid://b6i0v4n64tx4t" path="res://resources/texture/源石虫.png" id="1_uy33a"]
-[ext_resource type="Script" path="res://characters/enemies/enemy.gd" id="2_enemy"]
+[ext_resource type="Script" uid="uid://coy5apupifc10" path="res://characters/enemies/enemy.gd" id="1_egbgu"]
+[ext_resource type="Texture2D" uid="uid://b6i0v4n64tx4t" path="res://resources/texture/源石虫.png" id="2_irbuq"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jfoax"]
-atlas = ExtResource("1_uy33a")
+atlas = ExtResource("2_irbuq")
 region = Rect2(0, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6lc82"]
-atlas = ExtResource("1_uy33a")
+atlas = ExtResource("2_irbuq")
 region = Rect2(32, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_008bi"]
-atlas = ExtResource("1_uy33a")
+atlas = ExtResource("2_irbuq")
 region = Rect2(64, 0, 32, 32)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_3vt6o"]
@@ -33,10 +33,19 @@ animations = [{
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_bi512"]
-radius = 8.0
+radius = 7.0
 
-[node name="Enemy" type="CharacterBody2D" unique_id=1746237704]
-script = ExtResource("2_enemy")
+[node name="EnemyRed" type="CharacterBody2D" unique_id=1746237704]
+collision_layer = 4
+script = ExtResource("1_egbgu")
+faction = null
+move_speed = null
+stop_distance = null
+slow_down_distance = null
+obstacle_probe_distance = null
+obstacle_probe_radius = null
+wall_follow_lock_duration = null
+velocity_smoothing = null
 
 [node name="BodySprite" type="AnimatedSprite2D" parent="." unique_id=816406897]
 sprite_frames = SubResource("SpriteFrames_3vt6o")
