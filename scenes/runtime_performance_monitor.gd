@@ -49,7 +49,14 @@ func _report_performance_snapshot() -> void:
 		" flow_avg_frames=", snapped(flow_avg_frames, 0.01),
 		" flow_building=", rebuild_in_progress,
 		" flow_count=", int(flow_stats.get("count", 0)),
+		" flow_threshold_blocked=", int(flow_stats.get("threshold_blocked_count", 0)),
+		" flow_threshold_committed=", int(flow_stats.get("threshold_committed_count", 0)),
+		" flow_last_processed=", int(flow_stats.get("last_processed_cells", 0)),
+		" flow_avg_processed=", snapped(float(flow_stats.get("average_processed_cells", 0.0)), 0.01),
 		" enemy_last_ms=", snapped(enemy_last_ms, 0.01),
 		" enemy_avg_ms=", snapped(enemy_avg_ms, 0.01),
-		" enemy_samples=", int(enemy_stats.get("count", 0))
+		" enemy_samples=", int(enemy_stats.get("count", 0)),
+		" recovery_triggers=", int(enemy_stats.get("recovery_trigger_count", 0)),
+		" recovery_frames=", int(enemy_stats.get("recovery_active_frames", 0)),
+		" flow_refresh_requests=", int(enemy_stats.get("flow_refresh_request_count", 0))
 	)

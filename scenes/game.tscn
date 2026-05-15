@@ -163,6 +163,7 @@ bullet_tscn = ExtResource("5_iywne")
 script = ExtResource("11_flow_field_manager")
 tile_map_path = NodePath("../GroundTileMapLayer")
 player_path = NodePath("../Entities/Player")
+rebuild_radius_in_cells = 24
 
 [node name="FlowFieldDebugVisualizer" type="Node2D" parent="." unique_id=393767568]
 visible = false
@@ -171,6 +172,7 @@ script = ExtResource("13_flow_field_debug_visualizer")
 flow_field_manager_path = NodePath("../FlowFieldManager")
 
 [node name="SteeringDebugVisualizer" type="Node2D" parent="." unique_id=2113479084]
+visible = false
 z_index = 21
 script = ExtResource("14_steering_debug_visualizer")
 enemy_container_path = NodePath("../Entities/EnemyContainer")

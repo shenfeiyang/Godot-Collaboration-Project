@@ -30,6 +30,11 @@ static var _debug_rebuild_count: int = 0
 static var _debug_last_rebuild_usec: int = 0
 static var _debug_rebuild_total_frames: int = 0
 static var _debug_last_rebuild_frames: int = 0
+static var _debug_last_processed_cells: int = 0
+static var _debug_total_processed_cells: int = 0
+static var _debug_threshold_blocked_count: int = 0
+static var _debug_threshold_committed_count: int = 0
+static var _debug_last_unwalkable_target_cell: Vector2i = Vector2i(999999, 999999)
 
 # 用于生成流场的 TileMapLayer 路径。
 @export_group("节点引用")
@@ -41,6 +46,16 @@ static var _debug_last_rebuild_frames: int = 0
 @export_group("流场配置")
 # 仅在目标附近的局部窗口内重建流场，降低整图扩散成本。
 @export_range(8, 256, 1) var rebuild_radius_in_cells: int = 32
+# 玩家连续跨格时，合并普通重建请求，避免短时间内重复整图刷新。
+@export_range(0.0, 0.3, 0.01) var player_rebuild_debounce: float = 0.08
+# 玩家进入新格后，需要再向格内推进多少，才提交新的流场目标格。
+@export_range(0.0, 0.5, 0.01) var target_cell_commit_ratio: float = 0.4
+# 单帧最多推进多少个 frontier 节点，避免整次构建压在一个 frame 里。
+@export_range(8, 4096, 8) var rebuild_nodes_per_frame: int = 192
+# 单帧用于推进流场构建的最长预算（微秒）。
+@export_range(200, 10000, 100) var rebuild_usec_budget: int = 2000
+# 收到敌人的强制刷新请求后，最短等待多久再真正重建，避免同帧/连续帧重复整图刷新。
+@export_range(0.0, 1.0, 0.01) var forced_refresh_debounce: float = 0.35
 # 不可达或缺失方向时回退的默认方向。
 @export var fallback_direction: Vector2 = Vector2.ZERO
 
@@ -53,6 +68,20 @@ var _walkable_cells: Dictionary = {}
 # 预缓存每个可走格子允许扩散的邻居索引，避免重建时重复做可走性判定。
 var _cached_neighbor_indices: Dictionary = {}
 var _neighbor_flow_directions: Array[Vector2] = []
+var _pending_target_cell: Vector2i = Vector2i.ZERO
+var _has_pending_player_rebuild: bool = false
+var _player_rebuild_wait_remaining: float = 0.0
+var _pending_forced_refresh: bool = false
+var _forced_refresh_wait_remaining: float = 0.0
+var _pending_build_target_cell: Vector2i = Vector2i.ZERO
+var _pending_cost_field: Dictionary = {}
+var _pending_flow_field: Dictionary = {}
+var _pending_frontier_cells: Array[Vector2i] = []
+var _pending_frontier_costs: Array[float] = []
+var _rebuild_in_progress: bool = false
+var _pending_rebuild_frames: int = 0
+var _pending_rebuild_started_usec: int = 0
+var _pending_processed_cells: int = 0
 
 func _ready() -> void:
 	_tile_map = get_node_or_null(tile_map_path) as TileMapLayer
@@ -61,14 +90,46 @@ func _ready() -> void:
 	_rebuild_walkable_cells()
 	_rebuild_cached_neighbors()
 	_refresh_flow_field(true)
+	while _rebuild_in_progress:
+		_step_flow_field_rebuild()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _tile_map == null or _player == null:
 		return
-	if _world_to_cell(_player.global_position) == _last_target_cell:
-		return
 
-	_refresh_flow_field()
+	if _pending_forced_refresh:
+		_forced_refresh_wait_remaining = max(_forced_refresh_wait_remaining - delta, 0.0)
+		if _forced_refresh_wait_remaining <= 0.0:
+			_pending_forced_refresh = false
+			_refresh_flow_field(true)
+
+	var player_position: Vector2 = _player.global_position
+	var player_cell: Vector2i = _world_to_cell(player_position)
+	var reference_cell: Vector2i = _get_rebuild_reference_cell()
+	if player_cell == reference_cell:
+		_clear_pending_player_rebuild()
+	elif _should_commit_target_cell(player_position, player_cell):
+		if not _has_pending_player_rebuild or _pending_target_cell != player_cell:
+			_pending_target_cell = player_cell
+			_has_pending_player_rebuild = true
+			_player_rebuild_wait_remaining = player_rebuild_debounce
+			_debug_threshold_committed_count += 1
+	else:
+		_debug_threshold_blocked_count += 1
+
+	if _has_pending_player_rebuild:
+		if _player_rebuild_wait_remaining > 0.0:
+			_player_rebuild_wait_remaining = max(_player_rebuild_wait_remaining - delta, 0.0)
+		if _player_rebuild_wait_remaining <= 0.0:
+			_refresh_flow_field()
+
+	if _rebuild_in_progress:
+		_step_flow_field_rebuild()
+
+func request_forced_refresh() -> void:
+	_pending_forced_refresh = true
+	if _forced_refresh_wait_remaining <= 0.0:
+		_forced_refresh_wait_remaining = forced_refresh_debounce
 
 func get_flow_direction(world_position: Vector2) -> Vector2:
 	if _tile_map == null or _tile_map.tile_set == null:
@@ -111,19 +172,156 @@ func _refresh_flow_field(force: bool = false) -> void:
 	if _tile_map == null or _player == null:
 		return
 
-	var target_cell := _world_to_cell(_player.global_position)
-	if not force and target_cell == _last_target_cell:
+	var target_cell: Vector2i = _world_to_cell(_player.global_position)
+	if not force and _has_pending_player_rebuild:
+		target_cell = _pending_target_cell
+
+	if _rebuild_in_progress and target_cell == _pending_build_target_cell:
+		_clear_pending_player_rebuild()
+		return
+	if not force and not _rebuild_in_progress and target_cell == _last_target_cell:
+		_clear_pending_player_rebuild()
 		return
 
-	_last_target_cell = target_cell
-	var started_usec := Time.get_ticks_usec()
-	_build_flow_field(target_cell)
-	_debug_last_rebuild_usec = Time.get_ticks_usec() - started_usec
+	_clear_pending_player_rebuild()
+	_begin_flow_field_rebuild(target_cell)
+
+func _begin_flow_field_rebuild(target_cell: Vector2i) -> void:
+	_discard_pending_build()
+	if not _walkable_cells.get(target_cell, false):
+		_debug_last_unwalkable_target_cell = target_cell
+		return
+	_pending_build_target_cell = target_cell
+	_pending_cost_field = {}
+	_pending_flow_field = {}
+	_pending_frontier_cells = []
+	_pending_frontier_costs = []
+	_rebuild_in_progress = true
+	_pending_rebuild_frames = 0
+	_pending_rebuild_started_usec = Time.get_ticks_usec()
+	_pending_processed_cells = 0
+	_debug_last_unwalkable_target_cell = Vector2i(999999, 999999)
+
+	_pending_cost_field[target_cell] = 0.0
+	_pending_flow_field[target_cell] = Vector2.ZERO
+	_pending_frontier_cells.append(target_cell)
+	_pending_frontier_costs.append(0.0)
+
+func _step_flow_field_rebuild() -> void:
+	if not _rebuild_in_progress:
+		return
+
+	_pending_rebuild_frames += 1
+	var frame_started_usec := Time.get_ticks_usec()
+	var processed_this_frame: int = 0
+	var radius := rebuild_radius_in_cells
+	while not _pending_frontier_cells.is_empty():
+		var current: Vector2i = _pending_frontier_cells[0]
+		var current_cost: float = _pending_frontier_costs[0]
+		_heap_remove_root(_pending_frontier_cells, _pending_frontier_costs)
+		processed_this_frame += 1
+		_pending_processed_cells += 1
+		if current_cost > float(_pending_cost_field.get(current, INF)):
+			if _rebuild_budget_reached(frame_started_usec, processed_this_frame):
+				break
+			continue
+
+		if not _cached_neighbor_indices.has(current):
+			if _rebuild_budget_reached(frame_started_usec, processed_this_frame):
+				break
+			continue
+
+		var neighbor_indices: PackedInt32Array = _cached_neighbor_indices[current]
+		for index in neighbor_indices:
+			var neighbor: Vector2i = current + NEIGHBOR_OFFSETS[index]
+			if radius > 0 and (abs(neighbor.x - _pending_build_target_cell.x) > radius or abs(neighbor.y - _pending_build_target_cell.y) > radius):
+				continue
+			var next_cost := current_cost + float(NEIGHBOR_STEP_COSTS[index])
+			if next_cost >= float(_pending_cost_field.get(neighbor, INF)):
+				continue
+			_pending_cost_field[neighbor] = next_cost
+			_pending_flow_field[neighbor] = -_neighbor_flow_directions[index]
+			_heap_push(_pending_frontier_cells, _pending_frontier_costs, neighbor, next_cost)
+
+		if _rebuild_budget_reached(frame_started_usec, processed_this_frame):
+			break
+
+	if _pending_frontier_cells.is_empty():
+		_finish_flow_field_rebuild()
+
+func _finish_flow_field_rebuild() -> void:
+	_cost_field = _pending_cost_field
+	_flow_field = _pending_flow_field
+	_last_target_cell = _pending_build_target_cell
+	_debug_last_rebuild_usec = Time.get_ticks_usec() - _pending_rebuild_started_usec
 	_debug_rebuild_total_usec += _debug_last_rebuild_usec
 	_debug_rebuild_count += 1
-	_debug_last_rebuild_frames = 1
-	_debug_rebuild_total_frames += 1
+	_debug_last_rebuild_frames = _pending_rebuild_frames
+	_debug_rebuild_total_frames += _pending_rebuild_frames
+	_debug_last_processed_cells = _pending_processed_cells
+	_debug_total_processed_cells += _pending_processed_cells
+	_discard_pending_build()
 	flow_field_rebuilt.emit()
+
+func _discard_pending_build() -> void:
+	_rebuild_in_progress = false
+	_pending_build_target_cell = Vector2i.ZERO
+	_pending_cost_field = {}
+	_pending_flow_field = {}
+	_pending_frontier_cells = []
+	_pending_frontier_costs = []
+	_pending_rebuild_frames = 0
+	_pending_rebuild_started_usec = 0
+	_pending_processed_cells = 0
+
+func _rebuild_budget_reached(frame_started_usec: int, processed_this_frame: int) -> bool:
+	if processed_this_frame >= rebuild_nodes_per_frame:
+		return true
+	if rebuild_usec_budget > 0 and Time.get_ticks_usec() - frame_started_usec >= rebuild_usec_budget:
+		return true
+	return false
+
+func _clear_pending_player_rebuild() -> void:
+	_has_pending_player_rebuild = false
+	_pending_target_cell = Vector2i.ZERO
+	_player_rebuild_wait_remaining = 0.0
+
+func _get_rebuild_reference_cell() -> Vector2i:
+	if _rebuild_in_progress:
+		return _pending_build_target_cell
+	return _last_target_cell
+
+func _should_commit_target_cell(player_world_position: Vector2, candidate_cell: Vector2i) -> bool:
+	if target_cell_commit_ratio <= 0.0:
+		return true
+	if _tile_map == null or _tile_map.tile_set == null:
+		return true
+
+	var reference_cell: Vector2i = _get_rebuild_reference_cell()
+	var previous_center: Vector2 = _cell_to_world(reference_cell)
+	var candidate_center: Vector2 = _cell_to_world(candidate_cell)
+	var delta: Vector2i = candidate_cell - reference_cell
+	var tile_size := Vector2(_tile_map.tile_set.tile_size)
+	if tile_size.x <= 0.0 or tile_size.y <= 0.0:
+		return true
+
+	var candidate_offset: Vector2 = player_world_position - candidate_center
+	var threshold_x: float = tile_size.x * 0.5 * target_cell_commit_ratio
+	var threshold_y: float = tile_size.y * 0.5 * target_cell_commit_ratio
+	if delta.x > 0 and player_world_position.x < candidate_center.x - threshold_x:
+		return false
+	if delta.x < 0 and player_world_position.x > candidate_center.x + threshold_x:
+		return false
+	if delta.y > 0 and player_world_position.y < candidate_center.y - threshold_y:
+		return false
+	if delta.y < 0 and player_world_position.y > candidate_center.y + threshold_y:
+		return false
+	if delta.x == 0 and abs(candidate_offset.x) > tile_size.x * 0.5:
+		return false
+	if delta.y == 0 and abs(candidate_offset.y) > tile_size.y * 0.5:
+		return false
+
+	return previous_center != candidate_center
 
 func _rebuild_walkable_cells() -> void:
 	_walkable_cells.clear()
@@ -145,38 +343,6 @@ func _rebuild_cached_neighbors() -> void:
 				continue
 			neighbor_indices.append(index)
 		_cached_neighbor_indices[cell] = neighbor_indices
-
-func _build_flow_field(target_cell: Vector2i) -> void:
-	_cost_field.clear()
-	_flow_field.clear()
-	if not _walkable_cells.get(target_cell, false):
-		return
-
-	var frontier_cells: Array[Vector2i] = [target_cell]
-	var frontier_costs: Array[float] = [0.0]
-	_cost_field[target_cell] = 0.0
-	_flow_field[target_cell] = Vector2.ZERO
-	var radius := rebuild_radius_in_cells
-	while not frontier_cells.is_empty():
-		var current: Vector2i = frontier_cells[0]
-		var current_cost: float = frontier_costs[0]
-		_heap_remove_root(frontier_cells, frontier_costs)
-		if current_cost > float(_cost_field.get(current, INF)):
-			continue
-
-		if not _cached_neighbor_indices.has(current):
-			continue
-		var neighbor_indices: PackedInt32Array = _cached_neighbor_indices[current]
-		for index in neighbor_indices:
-			var neighbor: Vector2i = current + NEIGHBOR_OFFSETS[index]
-			if radius > 0 and (abs(neighbor.x - target_cell.x) > radius or abs(neighbor.y - target_cell.y) > radius):
-				continue
-			var next_cost := current_cost + float(NEIGHBOR_STEP_COSTS[index])
-			if next_cost >= float(_cost_field.get(neighbor, INF)):
-				continue
-			_cost_field[neighbor] = next_cost
-			_flow_field[neighbor] = -_neighbor_flow_directions[index]
-			_heap_push(frontier_cells, frontier_costs, neighbor, next_cost)
 
 func _can_step_to(from_cell: Vector2i, to_cell: Vector2i) -> bool:
 	if not _walkable_cells.get(to_cell, false):
@@ -230,22 +396,29 @@ func get_debug_tile_map() -> TileMapLayer:
 static func get_debug_rebuild_stats() -> Dictionary:
 	var average_usec := 0.0
 	var average_frames := 0.0
+	var average_processed_cells := 0.0
 	if _debug_rebuild_count > 0:
 		average_usec = float(_debug_rebuild_total_usec) / float(_debug_rebuild_count)
 		average_frames = float(_debug_rebuild_total_frames) / float(_debug_rebuild_count)
+		average_processed_cells = float(_debug_total_processed_cells) / float(_debug_rebuild_count)
 	return {
 		"last_usec": _debug_last_rebuild_usec,
 		"average_usec": average_usec,
 		"count": _debug_rebuild_count,
 		"last_frames": _debug_last_rebuild_frames,
 		"average_frames": average_frames,
+		"last_processed_cells": _debug_last_processed_cells,
+		"average_processed_cells": average_processed_cells,
+		"threshold_blocked_count": _debug_threshold_blocked_count,
+		"threshold_committed_count": _debug_threshold_committed_count,
+		"last_unwalkable_target_cell": _debug_last_unwalkable_target_cell,
 	}
 
 func is_rebuild_in_progress() -> bool:
-	return false
+	return _rebuild_in_progress
 
 func get_debug_build_target_cell() -> Vector2i:
-	return _last_target_cell
+	return _pending_build_target_cell if _rebuild_in_progress else _last_target_cell
 
 func _world_to_cell(world_position: Vector2) -> Vector2i:
 	return _tile_map.local_to_map(_tile_map.to_local(world_position))

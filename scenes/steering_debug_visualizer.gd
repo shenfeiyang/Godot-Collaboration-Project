@@ -9,16 +9,19 @@ class_name SteeringDebugVisualizer
 @export_group("显示开关")
 @export var debug_enabled: bool = true
 @export var show_desired_velocity: bool = true
+@export var show_avoidance_velocity: bool = true
+@export var show_recovery_velocity: bool = true
 @export var show_separation_velocity: bool = true
 @export var show_final_velocity: bool = true
 
 # 不同 steering 向量的显示样式。
 @export_group("显示样式")
 @export var desired_velocity_color: Color = Color(0.35, 0.8, 1.0, 0.95)
+@export var avoidance_velocity_color: Color = Color(1.0, 0.8, 0.2, 0.95)
+@export var recovery_velocity_color: Color = Color(1.0, 0.45, 0.35, 0.95)
 @export var separation_velocity_color: Color = Color(1.0, 0.45, 0.7, 0.95)
-@export var move_flow_color: Color = Color(0.45, 1.0, 0.45, 0.95)
-@export var follow_wall_color: Color = Color(1.0, 0.8, 0.2, 0.95)
-@export var yield_backoff_color: Color = Color(1.0, 0.45, 0.35, 0.95)
+@export var final_velocity_color: Color = Color(0.45, 1.0, 0.45, 0.95)
+@export var recovering_final_velocity_color: Color = Color(1.0, 0.35, 0.35, 1.0)
 @export_range(0.1, 2.0, 0.05) var vector_scale: float = 0.45
 @export_range(0.0, 16.0, 0.5) var anchor_offset_y: float = 10.0
 @export_range(0.05, 0.5, 0.01) var arrow_head_scale: float = 0.24
@@ -52,16 +55,22 @@ func _draw() -> void:
 func _draw_enemy_vectors(enemy: Enemy) -> void:
 	var anchor := to_local(enemy.global_position + Vector2(0.0, -anchor_offset_y))
 	var desired_velocity := enemy.get_debug_desired_velocity()
+	var avoidance_velocity := enemy.get_debug_avoidance_velocity()
+	var recovery_velocity := enemy.get_debug_recovery_velocity()
 	var separation_velocity := enemy.get_debug_separation_velocity()
 	var final_velocity := enemy.get_debug_final_velocity()
-	var final_velocity_color := _get_move_state_color(enemy.get_debug_move_state())
+	var current_final_color := recovering_final_velocity_color if enemy.get_debug_is_recovering() else final_velocity_color
 
 	if show_desired_velocity:
 		_draw_velocity_arrow(anchor, desired_velocity, desired_velocity_color)
+	if show_avoidance_velocity:
+		_draw_velocity_arrow(anchor, avoidance_velocity, avoidance_velocity_color)
+	if show_recovery_velocity:
+		_draw_velocity_arrow(anchor, recovery_velocity, recovery_velocity_color)
 	if show_separation_velocity:
 		_draw_velocity_arrow(anchor, separation_velocity, separation_velocity_color)
 	if show_final_velocity:
-		_draw_velocity_arrow(anchor, final_velocity, final_velocity_color)
+		_draw_velocity_arrow(anchor, final_velocity, current_final_color)
 
 func _draw_velocity_arrow(origin: Vector2, velocity_vector: Vector2, color: Color) -> void:
 	if velocity_vector == Vector2.ZERO:
@@ -77,12 +86,3 @@ func _draw_velocity_arrow(origin: Vector2, velocity_vector: Vector2, color: Colo
 	var head_right := end + back_direction.rotated(-0.45) * head_length
 	draw_line(end, head_left, color, line_width)
 	draw_line(end, head_right, color, line_width)
-
-func _get_move_state_color(move_state: Enemy.MoveState) -> Color:
-	match move_state:
-		Enemy.MoveState.FOLLOW_WALL:
-			return follow_wall_color
-		Enemy.MoveState.YIELD_BACKOFF:
-			return yield_backoff_color
-		_:
-			return move_flow_color
