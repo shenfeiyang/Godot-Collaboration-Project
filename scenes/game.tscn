@@ -181,6 +181,7 @@ enemy_container_path = NodePath("../Entities/EnemyContainer")
 script = ExtResource("15_runtime_performance_monitor")
 flow_field_manager_path = NodePath("../FlowFieldManager")
 enemy_container_path = NodePath("../Entities/EnemyContainer")
+monitor_enabled = false
 
 [node name="EnemySpawner" type="Node" parent="." unique_id=1271132066]
 script = ExtResource("6_p57ef")
