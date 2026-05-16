@@ -8,7 +8,9 @@
       "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" branch -a)",
       "Bash(git -C \"d:\\\\godot_object\\\\2D\\\\Godot-Collaboration-Project\\\\.claude\\\\worktrees\\\\agent-af56c4500fd00c1f0\" remote -v)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "Bash(python -)",
+      "Bash(python -m json.tool __TRACKED_VAR__/.claude/settings.json)"
     ]
   }
 }
