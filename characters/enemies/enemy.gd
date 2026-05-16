@@ -21,40 +21,52 @@ static var _debug_flow_refresh_request_count: int = 0
 @export var slow_down_distance: float = 30.0
 
 @export_group("局部移动")
+# 低频重规划间隔，避免每帧都做完整局部决策。
+@export_range(0.02, 0.5, 0.01) var replan_interval: float = 0.12
 # 前向阻塞探测距离。
-@export var obstacle_probe_distance: float = 16.0
+@export var obstacle_probe_distance: float = 20.0
 # 前向阻塞探测的侧向采样偏移。
-@export var obstacle_probe_radius: float = 7.0
+@export var obstacle_probe_radius: float = 10.0
 # 两侧短射线的探测距离，用于矩形边缘擦碰修正。
-@export var obstacle_side_probe_distance: float = 10.0
+@export var obstacle_side_probe_distance: float = 12.0
+# 沿墙方向的短时锁定，避免外拐角处来回换边。
+@export_range(0.0, 1.0, 0.01) var wall_follow_lock_duration: float = 0.16
+# 绕障选边锁定时长，避免矩形正面这种对称场景里上下反复切边。
+@export_range(0.0, 1.5, 0.01) var bypass_side_lock_duration: float = 0.42
+# 沿墙超过该时长仍无明显进展时，改走脱困流程。
+@export_range(0.05, 1.5, 0.01) var wall_follow_timeout: float = 0.36
+# 退让状态持续时间。
+@export_range(0.05, 1.0, 0.01) var yield_backoff_duration: float = 0.08
+# 退让时使用的速度比例。
+@export_range(0.1, 1.0, 0.01) var yield_backoff_speed_scale: float = 0.28
+# 长时间没靠近主角时，认为当前通过策略失效。
+@export_range(0.05, 1.5, 0.01) var stuck_timeout: float = 0.28
+# 判定为有效接近主角所需的最小距离变化。
+@export var stuck_distance_epsilon: float = 1.5
 # 仅用于修正近邻拥挤的轻量分离半径。
-@export var separation_radius: float = 18.0
+@export var separation_radius: float = 8.0
 # 仅用于缓解近邻重叠的轻量分离强度。
-@export var separation_strength: float = 18.0
-# 判定为持续无进展所需时长。
-@export_range(0.05, 1.5, 0.01) var stuck_timeout: float = 0.50
-# 判定为有效接近目标所需的最小距离变化。
-@export var stuck_distance_epsilon: float = 3.0
-# 至少需要多近时才允许进入 recovery，避免远距离轻微抖动就触发。
-@export var recovery_trigger_distance: float = 52.0
-# 连续多少次 recovery 仍失败后，才允许申请强制刷新流场。
-@export_range(1, 6, 1) var forced_refresh_attempt_threshold: int = 3
-# 应急脱困持续时间。
-@export_range(0.05, 0.8, 0.01) var recovery_duration: float = 0.10
-# 两次应急脱困之间的冷却时间。
-@export_range(0.0, 1.0, 0.01) var recovery_cooldown: float = 0.36
-# 强制刷新流场的冷却时间。
-@export_range(0.0, 2.0, 0.01) var flow_refresh_cooldown: float = 1.2
-# recovery 向量中切向分量的权重。
-@export_range(0.0, 2.0, 0.01) var recovery_tangent_scale: float = 0.9
-# recovery 向量中反法线分量的权重。
-@export_range(0.0, 2.0, 0.01) var recovery_normal_scale: float = 0.35
-# recovery 退让时使用的速度比例。
-@export_range(0.1, 1.0, 0.01) var recovery_speed_scale: float = 0.55
+@export var separation_strength: float = 6.0
+# 贴墙或短退时使用的分离权重，避免横向拉偏主状态。
+@export_range(0.0, 1.0, 0.01) var constrained_separation_scale: float = 0.25
 # 速度平滑系数，只做轻量收边。
 @export_range(0.0, 1.0, 0.01) var velocity_smoothing: float = 0.20
+# 贴墙状态恢复到流场直行前，需要连续保持通畅的时长。
+@export_range(0.0, 0.5, 0.01) var wall_recovery_duration: float = 0.12
 # 单帧目标方向最大转向速度，避免向量瞬间大角度翻转。
 @export_range(0.0, 24.0, 0.1) var max_target_turn_speed: float = 10.0
+# 贴墙阶段的最低前进速度比例，避免沿墙时速度塌得太低。
+@export_range(0.1, 1.0, 0.01) var wall_follow_min_speed_scale: float = 0.72
+# 贴墙阶段额外附带的流场前进权重，降低沿墙时的顿挫感。
+@export_range(0.0, 0.6, 0.01) var wall_follow_flow_blend: float = 0.18
+# 前向命中后沿墙额外前探距离，用于提前越过外拐角。
+@export var wall_probe_forward_distance: float = 10.0
+# 贴墙时朝流场方向恢复所需的最小对齐度。
+@export_range(-1.0, 1.0, 0.01) var wall_recovery_alignment: float = 0.2
+# 进入贴墙后，至少沿当前边持续前进的最短时长，避免每几帧重新判边。
+@export_range(0.0, 0.8, 0.01) var wall_commit_duration: float = 0.22
+# 贴边阶段朝障碍保持的法线权重，用于稳定沿同一侧滑行。
+@export_range(0.0, 0.8, 0.01) var wall_normal_hold_scale: float = 0.22
 # 朝向切换所需的最小水平领先量，避免左右接近时频繁摇头。
 @export var facing_switch_hysteresis: float = 12.0
 
