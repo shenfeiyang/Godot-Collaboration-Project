@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="FireProjectileEffectConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/fire_projectile_effect_config.gd" id="1_fire_effect"]
+[ext_resource type="PackedScene" path="res://abilities/bullet/bullet.tscn" id="2_bullet"]
+[ext_resource type="Resource" path="res://abilities/skills/data/skill3_pattern.tres" id="3_pattern"]
+
+[resource]
+script = ExtResource("1_fire_effect")
+bullet_scene = ExtResource("2_bullet")
+pattern_config = ExtResource("3_pattern")

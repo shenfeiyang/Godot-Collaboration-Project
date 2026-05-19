@@ -17,3 +17,17 @@ enum Faction {
 	ENEMY = 1,
 	NEUTRAL = 2,
 }
+
+# 统一定义属性修正操作类型。
+enum ModifierOperation {
+	FLAT_ADD = 0,
+	PERCENT_ADD = 1,
+	PERCENT_MUL = 2,
+}
+
+# 统一定义 buff 再次应用时的叠层策略。
+enum BuffStackingRule {
+	REFRESH_DURATION = 0,
+	ADD_STACK = 1,
+	INDEPENDENT_INSTANCE = 2,
+}

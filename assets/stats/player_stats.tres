@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="UnitStatsConfig" format=3 uid="uid://p6jo10lewkaj"]
+
+[ext_resource type="Script" uid="uid://dbgkf0113n5h6" path="res://scripts/stats/unit_stats_config.gd" id="1_o15me"]
+
+[resource]
+script = ExtResource("1_o15me")
+attack = 16.0
+defense = 4.0
+max_energy = 100.0
+energy_regen = 10.0

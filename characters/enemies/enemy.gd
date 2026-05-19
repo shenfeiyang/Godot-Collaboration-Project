@@ -3,13 +3,11 @@ class_name Enemy
 
 const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
 const PHYSICS_LAYERS = preload("res://scripts/physics_layers.gd")
+const STAT_IDS = preload("res://scripts/stats/stat_ids.gd")
 
 static var _debug_physics_total_usec: int = 0
 static var _debug_physics_count: int = 0
 static var _debug_last_physics_usec: int = 0
-static var _debug_recovery_trigger_count: int = 0
-static var _debug_recovery_active_frames: int = 0
-static var _debug_flow_refresh_request_count: int = 0
 
 # 当前敌人所属阵营，供子弹过滤友军与自身时读取。
 @export_enum("玩家", "怪物", "中立") var faction: int = SHARED_ENUMS.Faction.ENEMY
@@ -20,67 +18,51 @@ static var _debug_flow_refresh_request_count: int = 0
 # 进入停止距离前开始提前减速，降低贴脸时的来回抖动。
 @export var slow_down_distance: float = 30.0
 
-@export_group("局部移动")
-# 前向阻塞探测距离。
-@export var obstacle_probe_distance: float = 16.0
-# 前向阻塞探测的侧向采样偏移。
-@export var obstacle_probe_radius: float = 7.0
-# 两侧短射线的探测距离，用于矩形边缘擦碰修正。
-@export var obstacle_side_probe_distance: float = 10.0
+@export_group("网格导航")
+# 多久允许重算一次路径，避免所有敌人每帧同时寻路。
+@export_range(0.05, 1.0, 0.01) var repath_interval: float = 0.22
+# 偏离当前路径多少格后强制重算。
+@export_range(0, 8, 1) var repath_cell_tolerance: int = 1
+# 接近路径点到该距离后切到下一个路径点。
+@export var waypoint_reach_distance: float = 6.0
+# 连续多久没有明显靠近当前路径点时，判定当前路径失效并重算。
+@export_range(0.1, 2.0, 0.01) var path_stuck_timeout: float = 0.45
+# 判定为有效接近当前路径点所需的最小距离变化。
+@export var path_progress_epsilon: float = 2.0
+
+@export_group("局部分散")
 # 仅用于修正近邻拥挤的轻量分离半径。
 @export var separation_radius: float = 18.0
 # 仅用于缓解近邻重叠的轻量分离强度。
 @export var separation_strength: float = 18.0
-# 判定为持续无进展所需时长。
-@export_range(0.05, 1.5, 0.01) var stuck_timeout: float = 0.50
-# 判定为有效接近目标所需的最小距离变化。
-@export var stuck_distance_epsilon: float = 3.0
-# 至少需要多近时才允许进入 recovery，避免远距离轻微抖动就触发。
-@export var recovery_trigger_distance: float = 52.0
-# 连续多少次 recovery 仍失败后，才允许申请强制刷新流场。
-@export_range(1, 6, 1) var forced_refresh_attempt_threshold: int = 3
-# 应急脱困持续时间。
-@export_range(0.05, 0.8, 0.01) var recovery_duration: float = 0.10
-# 两次应急脱困之间的冷却时间。
-@export_range(0.0, 1.0, 0.01) var recovery_cooldown: float = 0.36
-# 强制刷新流场的冷却时间。
-@export_range(0.0, 2.0, 0.01) var flow_refresh_cooldown: float = 1.2
-# recovery 向量中切向分量的权重。
-@export_range(0.0, 2.0, 0.01) var recovery_tangent_scale: float = 0.9
-# recovery 向量中反法线分量的权重。
-@export_range(0.0, 2.0, 0.01) var recovery_normal_scale: float = 0.35
-# recovery 退让时使用的速度比例。
-@export_range(0.1, 1.0, 0.01) var recovery_speed_scale: float = 0.55
 # 速度平滑系数，只做轻量收边。
 @export_range(0.0, 1.0, 0.01) var velocity_smoothing: float = 0.20
-# 单帧目标方向最大转向速度，避免向量瞬间大角度翻转。
-@export_range(0.0, 24.0, 0.1) var max_target_turn_speed: float = 10.0
 # 朝向切换所需的最小水平领先量，避免左右接近时频繁摇头。
 @export var facing_switch_hysteresis: float = 12.0
+# 速度水平分量至少超过该阈值时，朝向跟随实际移动方向。
+@export var facing_velocity_threshold: float = 6.0
 
 @onready var body_sprite: AnimatedSprite2D = _resolve_body_sprite()
+@onready var stats_component: StatsComponent = $StatsComponent
 
 var target: Node2D = null
-var flow_field_manager: FlowFieldManager = null
+var navigation_service: GridNavigationService = null
 var enemy_spatial_partition: EnemySpatialPartition = null
 var _cached_desired_velocity: Vector2 = Vector2.ZERO
-var _cached_avoidance_velocity: Vector2 = Vector2.ZERO
-var _cached_recovery_velocity: Vector2 = Vector2.ZERO
 var _cached_separation_velocity: Vector2 = Vector2.ZERO
-var _stuck_reference_distance: float = INF
-var _stuck_time: float = 0.0
-var _recovery_time_remaining: float = 0.0
-var _recovery_cooldown_remaining: float = 0.0
-var _flow_refresh_cooldown_remaining: float = 0.0
-var _recovery_attempts_since_progress: int = 0
-var _pending_flow_refresh: bool = false
-var _debug_is_recovering: bool = false
+var _current_path: Array[Vector2] = []
+var _path_index: int = 0
+var _repath_cooldown_remaining: float = 0.0
+var _last_target_cell: Vector2i = GridNavigationService.INVALID_CELL
+var _last_path_start_cell: Vector2i = GridNavigationService.INVALID_CELL
+var _path_reference_distance: float = INF
+var _path_stuck_time: float = 0.0
 
 func set_target(new_target: Node2D) -> void:
 	target = new_target
 
-func set_flow_field_manager(new_flow_field_manager: FlowFieldManager) -> void:
-	flow_field_manager = new_flow_field_manager
+func set_navigation_service(new_navigation_service: GridNavigationService) -> void:
+	navigation_service = new_navigation_service
 
 func set_enemy_spatial_partition(new_enemy_spatial_partition: EnemySpatialPartition) -> void:
 	enemy_spatial_partition = new_enemy_spatial_partition
@@ -88,9 +70,12 @@ func set_enemy_spatial_partition(new_enemy_spatial_partition: EnemySpatialPartit
 func _ready() -> void:
 	collision_layer = PHYSICS_LAYERS.ENEMY_BODY_LAYER_BIT
 	collision_mask = PHYSICS_LAYERS.ENEMY_BODY_MASK
+	if stats_component != null and not stats_component.died.is_connected(_on_stats_died):
+		stats_component.died.connect(_on_stats_died)
 	_update_facing(Vector2.LEFT)
 	if enemy_spatial_partition != null:
 		enemy_spatial_partition.register_enemy(self)
+	_repath_cooldown_remaining = _get_initial_repath_offset()
 
 func _exit_tree() -> void:
 	if enemy_spatial_partition != null:
@@ -98,24 +83,26 @@ func _exit_tree() -> void:
 
 func _physics_process(delta: float) -> void:
 	var started_usec := Time.get_ticks_usec()
+	if stats_component != null and stats_component.is_dead():
+		_reset_navigation_state()
+		velocity = Vector2.ZERO
+		move_and_slide()
+		_update_partition_position()
+		_record_debug_physics_cost(started_usec)
+		return
 	if target == null or not is_instance_valid(target):
 		_reset_navigation_state()
-		velocity = velocity.move_toward(Vector2.ZERO, move_speed * delta * 6.0)
+		velocity = velocity.move_toward(Vector2.ZERO, _get_move_speed() * delta * 6.0)
 		move_and_slide()
 		_update_partition_position()
 		_record_debug_physics_cost(started_usec)
 		return
 
-	_update_recovery_timers(delta)
-	var offset := target.global_position - global_position
-	var distance_to_target := offset.length()
-	_update_stuck_progress(distance_to_target, delta)
-
+	_repath_cooldown_remaining = max(_repath_cooldown_remaining - delta, 0.0)
+	var target_offset := target.global_position - global_position
+	var distance_to_target := target_offset.length()
 	if distance_to_target <= stop_distance:
 		_cached_desired_velocity = Vector2.ZERO
-		_cached_avoidance_velocity = Vector2.ZERO
-		_cached_recovery_velocity = Vector2.ZERO
-		_debug_is_recovering = false
 		_cached_separation_velocity = _get_separation_velocity()
 		_apply_seek_velocity(_cached_separation_velocity)
 		move_and_slide()
@@ -124,19 +111,22 @@ func _physics_process(delta: float) -> void:
 		_record_debug_physics_cost(started_usec)
 		return
 
-	_cached_desired_velocity = _get_flow_desired_velocity(offset)
-	_cached_avoidance_velocity = _get_avoidance_velocity(_cached_desired_velocity)
-	_cached_recovery_velocity = _get_recovery_velocity(_cached_desired_velocity, offset)
-	_debug_is_recovering = _cached_recovery_velocity != Vector2.ZERO
-	if _debug_is_recovering:
-		_debug_recovery_active_frames += 1
-	if _debug_is_recovering and _pending_flow_refresh:
-		_try_force_refresh_flow_field()
+	_refresh_path_if_needed()
+	var next_waypoint := _get_current_waypoint()
+	if next_waypoint == Vector2.ZERO:
+		next_waypoint = target.global_position
+	var waypoint_offset := next_waypoint - global_position
+	if waypoint_offset.length() <= waypoint_reach_distance:
+		_advance_path_waypoint()
+		next_waypoint = _get_current_waypoint()
+		if next_waypoint == Vector2.ZERO:
+			next_waypoint = target.global_position
+		waypoint_offset = next_waypoint - global_position
+
+	_update_path_progress(waypoint_offset.length(), delta)
+	_cached_desired_velocity = _get_path_follow_velocity(waypoint_offset, distance_to_target)
 	_cached_separation_velocity = _get_separation_velocity()
-	var primary_velocity := _cached_recovery_velocity if _debug_is_recovering else (_cached_desired_velocity + _cached_avoidance_velocity)
-	var steering_velocity := primary_velocity + _cached_separation_velocity
-	var next_velocity := _rotate_velocity_toward(velocity, steering_velocity, delta)
-	_apply_seek_velocity(next_velocity)
+	_apply_seek_velocity(_cached_desired_velocity + _cached_separation_velocity)
 	move_and_slide()
 	_update_partition_position()
 	_update_facing(velocity)
@@ -144,185 +134,85 @@ func _physics_process(delta: float) -> void:
 
 func _reset_navigation_state() -> void:
 	_cached_desired_velocity = Vector2.ZERO
-	_cached_avoidance_velocity = Vector2.ZERO
-	_cached_recovery_velocity = Vector2.ZERO
 	_cached_separation_velocity = Vector2.ZERO
-	_stuck_reference_distance = INF
-	_stuck_time = 0.0
-	_recovery_time_remaining = 0.0
-	_recovery_cooldown_remaining = 0.0
-	_flow_refresh_cooldown_remaining = 0.0
-	_recovery_attempts_since_progress = 0
-	_pending_flow_refresh = false
-	_debug_is_recovering = false
+	_current_path.clear()
+	_path_index = 0
+	_last_target_cell = GridNavigationService.INVALID_CELL
+	_last_path_start_cell = GridNavigationService.INVALID_CELL
+	_path_reference_distance = INF
+	_path_stuck_time = 0.0
 
-func _update_recovery_timers(delta: float) -> void:
-	_recovery_time_remaining = max(_recovery_time_remaining - delta, 0.0)
-	_recovery_cooldown_remaining = max(_recovery_cooldown_remaining - delta, 0.0)
-	_flow_refresh_cooldown_remaining = max(_flow_refresh_cooldown_remaining - delta, 0.0)
-	if _recovery_time_remaining <= 0.0:
-		_cached_recovery_velocity = Vector2.ZERO
-		_debug_is_recovering = false
-
-func _update_stuck_progress(distance_to_target: float, delta: float) -> void:
-	if _debug_is_recovering:
-		_stuck_reference_distance = distance_to_target
-		_stuck_time = 0.0
+func _refresh_path_if_needed() -> void:
+	if navigation_service == null:
 		return
-	if _stuck_reference_distance == INF:
-		_stuck_reference_distance = distance_to_target
-		_stuck_time = 0.0
+	if target == null or not is_instance_valid(target):
 		return
-	if distance_to_target <= _stuck_reference_distance - stuck_distance_epsilon:
-		_stuck_reference_distance = distance_to_target
-		_stuck_time = 0.0
-		_recovery_attempts_since_progress = 0
+	if _repath_cooldown_remaining > 0.0 and not _needs_repath():
 		return
-	_stuck_time += delta
+	if _needs_repath():
+		_rebuild_path()
 
-func _should_trigger_recovery(distance_to_target: float, desired_velocity: Vector2) -> bool:
-	if distance_to_target > recovery_trigger_distance:
+func _needs_repath() -> bool:
+	if navigation_service == null:
 		return false
-	if desired_velocity == Vector2.ZERO:
-		return false
-	if _recovery_time_remaining > 0.0 or _recovery_cooldown_remaining > 0.0:
-		return false
-	return _stuck_time >= stuck_timeout
+	if _current_path.is_empty() or _path_index >= _current_path.size():
+		return true
 
-func _get_flow_desired_velocity(offset: Vector2) -> Vector2:
-	var move_direction := _get_flow_move_direction(offset)
-	var distance := offset.length()
-	if distance <= stop_distance:
+	var current_cell := navigation_service.world_to_cell(global_position)
+	var target_cell := navigation_service.world_to_cell(target.global_position)
+	if current_cell == GridNavigationService.INVALID_CELL or target_cell == GridNavigationService.INVALID_CELL:
+		return false
+	if _last_target_cell != target_cell:
+		return true
+	if _last_path_start_cell == GridNavigationService.INVALID_CELL:
+		return true
+	if _get_cell_distance(current_cell, _last_path_start_cell) > repath_cell_tolerance:
+		return true
+	return _path_stuck_time >= path_stuck_timeout
+
+func _rebuild_path() -> void:
+	if navigation_service == null or target == null or not is_instance_valid(target):
+		return
+
+	_current_path = navigation_service.get_path_world(global_position, target.global_position)
+	_path_index = 0
+	_last_target_cell = navigation_service.world_to_cell(target.global_position)
+	_last_path_start_cell = navigation_service.world_to_cell(global_position)
+	_path_reference_distance = INF
+	_path_stuck_time = 0.0
+	_repath_cooldown_remaining = repath_interval + _get_initial_repath_offset() * 0.5
+
+func _get_current_waypoint() -> Vector2:
+	if _path_index < 0 or _path_index >= _current_path.size():
+		return Vector2.ZERO
+	return _current_path[_path_index]
+
+func _advance_path_waypoint() -> void:
+	if _path_index < _current_path.size():
+		_path_index += 1
+	if _path_index >= _current_path.size() and navigation_service != null:
+		_last_path_start_cell = navigation_service.world_to_cell(global_position)
+
+func _update_path_progress(distance_to_waypoint: float, delta: float) -> void:
+	if _path_reference_distance == INF:
+		_path_reference_distance = distance_to_waypoint
+		_path_stuck_time = 0.0
+		return
+	if distance_to_waypoint <= _path_reference_distance - path_progress_epsilon:
+		_path_reference_distance = distance_to_waypoint
+		_path_stuck_time = 0.0
+		return
+	_path_stuck_time += delta
+
+func _get_path_follow_velocity(waypoint_offset: Vector2, distance_to_target: float) -> Vector2:
+	if waypoint_offset == Vector2.ZERO:
 		return Vector2.ZERO
 
 	var effective_slow_down_distance: float = max(slow_down_distance, stop_distance + 0.001)
 	var speed_scale: float = 1.0
-	if distance < effective_slow_down_distance:
-		speed_scale = clamp((distance - stop_distance) / (effective_slow_down_distance - stop_distance), 0.0, 1.0)
-
-	return move_direction * move_speed * speed_scale
-
-func _get_flow_move_direction(offset: Vector2) -> Vector2:
-	var move_direction := offset.normalized()
-	if flow_field_manager != null:
-		var flow_direction := flow_field_manager.get_flow_direction(global_position)
-		if flow_direction != Vector2.ZERO:
-			move_direction = flow_direction
-
-	return move_direction
-
-func _detect_world_block(direction: Vector2) -> Dictionary:
-	if direction == Vector2.ZERO:
-		return {}
-
-	var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
-	var probe_origin: Vector2 = global_position
-	var forward_point: Vector2 = probe_origin + direction * obstacle_probe_distance
-	var right: Vector2 = Vector2(direction.y, -direction.x)
-	var left: Vector2 = -right
-	var samples: Array[Dictionary] = [
-		{
-			"to": forward_point,
-		},
-		{
-			"to": probe_origin + direction * obstacle_side_probe_distance + right * obstacle_probe_radius,
-		},
-		{
-			"to": probe_origin + direction * obstacle_side_probe_distance + left * obstacle_probe_radius,
-		},
-	]
-
-	for sample in samples:
-		var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(probe_origin, sample.to, PHYSICS_LAYERS.WORLD_LAYER_BIT)
-		query.exclude = [get_rid()]
-		var hit: Dictionary = space_state.intersect_ray(query)
-		if hit.is_empty():
-			continue
-
-		return {
-			"normal": hit.normal,
-			"position": hit.position,
-		}
-
-	return {}
-
-func _get_avoidance_velocity(desired_velocity: Vector2) -> Vector2:
-	if desired_velocity == Vector2.ZERO:
-		return Vector2.ZERO
-
-	var desired_direction: Vector2 = desired_velocity.normalized()
-	var world_hit: Dictionary = _detect_world_block(desired_direction)
-	if world_hit.is_empty():
-		return Vector2.ZERO
-
-	var hit_normal: Vector2 = world_hit.get("normal", Vector2.ZERO)
-	if hit_normal == Vector2.ZERO:
-		return Vector2.ZERO
-
-	var tangent_a: Vector2 = Vector2(-hit_normal.y, hit_normal.x).normalized()
-	var tangent_b: Vector2 = -tangent_a
-	var avoid_direction := tangent_a if tangent_a.dot(desired_direction) >= tangent_b.dot(desired_direction) else tangent_b
-	if avoid_direction == Vector2.ZERO:
-		return Vector2.ZERO
-
-	return avoid_direction * desired_velocity.length()
-
-func _get_recovery_velocity(desired_velocity: Vector2, target_offset: Vector2) -> Vector2:
-	if _recovery_time_remaining > 0.0:
-		return _cached_recovery_velocity
-	if not _should_trigger_recovery(target_offset.length(), desired_velocity):
-		_pending_flow_refresh = false
-		return Vector2.ZERO
-
-	var recovery_velocity: Vector2 = _build_recovery_velocity(desired_velocity, target_offset)
-	if recovery_velocity == Vector2.ZERO:
-		_recovery_attempts_since_progress += 1
-		_pending_flow_refresh = _recovery_attempts_since_progress >= forced_refresh_attempt_threshold
-		_recovery_cooldown_remaining = recovery_cooldown
-		_stuck_reference_distance = INF
-		_stuck_time = 0.0
-		return Vector2.ZERO
-
-	_cached_recovery_velocity = recovery_velocity
-	_recovery_time_remaining = recovery_duration
-	_recovery_cooldown_remaining = recovery_cooldown
-	_recovery_attempts_since_progress += 1
-	_debug_recovery_trigger_count += 1
-	_pending_flow_refresh = _recovery_attempts_since_progress >= forced_refresh_attempt_threshold and _flow_refresh_cooldown_remaining <= 0.0
-	_stuck_reference_distance = INF
-	_stuck_time = 0.0
-	return _cached_recovery_velocity
-
-func _build_recovery_velocity(desired_velocity: Vector2, target_offset: Vector2) -> Vector2:
-	var desired_direction: Vector2 = desired_velocity.normalized()
-	var recovery_speed: float = max(desired_velocity.length() * recovery_speed_scale, move_speed * recovery_speed_scale)
-	var world_hit: Dictionary = _detect_world_block(desired_direction)
-	if not world_hit.is_empty():
-		var hit_normal: Vector2 = world_hit.get("normal", Vector2.ZERO)
-		if hit_normal != Vector2.ZERO:
-			var tangent_a: Vector2 = Vector2(-hit_normal.y, hit_normal.x).normalized()
-			var tangent_b: Vector2 = -tangent_a
-			var tangent: Vector2 = tangent_a if tangent_a.dot(desired_direction) >= tangent_b.dot(desired_direction) else tangent_b
-			var recovery_direction: Vector2 = (tangent * recovery_tangent_scale + hit_normal * recovery_normal_scale).normalized()
-			if recovery_direction != Vector2.ZERO:
-				return recovery_direction * recovery_speed
-
-	var fallback_direction: Vector2 = -desired_direction
-	if fallback_direction == Vector2.ZERO and target_offset != Vector2.ZERO:
-		fallback_direction = -target_offset.normalized()
-	if fallback_direction == Vector2.ZERO:
-		fallback_direction = Vector2.LEFT
-	return fallback_direction * recovery_speed
-
-func _try_force_refresh_flow_field() -> void:
-	if not _pending_flow_refresh:
-		return
-	_pending_flow_refresh = false
-	if flow_field_manager == null or _flow_refresh_cooldown_remaining > 0.0:
-		return
-	flow_field_manager.request_forced_refresh()
-	_debug_flow_refresh_request_count += 1
-	_flow_refresh_cooldown_remaining = flow_refresh_cooldown
+	if distance_to_target < effective_slow_down_distance:
+		speed_scale = clamp((distance_to_target - stop_distance) / (effective_slow_down_distance - stop_distance), 0.0, 1.0)
+	return waypoint_offset.normalized() * _get_move_speed() * speed_scale
 
 func _get_separation_velocity() -> Vector2:
 	if separation_radius <= 0.0 or separation_strength <= 0.0:
@@ -356,31 +246,14 @@ func _get_separation_velocity() -> Vector2:
 
 	return push.normalized() * separation_strength
 
-func _rotate_velocity_toward(current_velocity: Vector2, target_velocity: Vector2, delta: float) -> Vector2:
-	if target_velocity == Vector2.ZERO:
-		return Vector2.ZERO
-	if current_velocity == Vector2.ZERO:
-		return target_velocity
-
-	var current_length := current_velocity.length()
-	var target_length := target_velocity.length()
-	var current_direction := current_velocity / current_length if current_length > 0.0 else target_velocity.normalized()
-	var target_direction := target_velocity / target_length if target_length > 0.0 else current_direction
-	var turn_ratio: float = clamp(max_target_turn_speed * delta, 0.0, 1.0)
-	var blended_direction := current_direction.slerp(target_direction, turn_ratio).normalized()
-	var blended_speed := lerpf(current_length, target_length, turn_ratio)
-	return blended_direction * blended_speed
-
 func _apply_seek_velocity(target_velocity: Vector2) -> void:
 	if target_velocity.length() > move_speed:
 		target_velocity = target_velocity.normalized() * move_speed
-
 	velocity = velocity.lerp(target_velocity, velocity_smoothing)
 
 func _update_partition_position() -> void:
 	if enemy_spatial_partition == null:
 		return
-
 	enemy_spatial_partition.update_enemy_position(self, global_position)
 
 func _record_debug_physics_cost(started_usec: int) -> void:
@@ -396,19 +269,10 @@ static func get_debug_physics_stats() -> Dictionary:
 		"last_usec": _debug_last_physics_usec,
 		"average_usec": average_usec,
 		"count": _debug_physics_count,
-		"recovery_trigger_count": _debug_recovery_trigger_count,
-		"recovery_active_frames": _debug_recovery_active_frames,
-		"flow_refresh_request_count": _debug_flow_refresh_request_count,
 	}
 
 func get_debug_desired_velocity() -> Vector2:
 	return _cached_desired_velocity
-
-func get_debug_avoidance_velocity() -> Vector2:
-	return _cached_avoidance_velocity
-
-func get_debug_recovery_velocity() -> Vector2:
-	return _cached_recovery_velocity
 
 func get_debug_separation_velocity() -> Vector2:
 	return _cached_separation_velocity
@@ -416,14 +280,16 @@ func get_debug_separation_velocity() -> Vector2:
 func get_debug_final_velocity() -> Vector2:
 	return velocity
 
-func get_debug_is_recovering() -> bool:
-	return _debug_is_recovering
+func get_debug_path() -> Array[Vector2]:
+	return _current_path.duplicate()
+
+func get_debug_path_index() -> int:
+	return _path_index
 
 func _resolve_body_sprite() -> AnimatedSprite2D:
 	var sprite := get_node_or_null("BodySprite") as AnimatedSprite2D
 	if sprite != null:
 		return sprite
-
 	return get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
 
 func _update_facing(direction: Vector2) -> void:
@@ -432,10 +298,29 @@ func _update_facing(direction: Vector2) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 
-	var target_dx: float = target.global_position.x - global_position.x
-	if body_sprite.flip_h:
-		if target_dx < -facing_switch_hysteresis:
-			body_sprite.flip_h = false
+	var facing_x: float = 0.0
+	if abs(direction.x) >= facing_velocity_threshold:
+		facing_x = direction.x
 	else:
-		if target_dx > facing_switch_hysteresis:
-			body_sprite.flip_h = true
+		var target_dx: float = target.global_position.x - global_position.x
+		if abs(target_dx) >= facing_switch_hysteresis:
+			facing_x = target_dx
+
+	if facing_x == 0.0:
+		return
+	body_sprite.flip_h = facing_x > 0.0
+
+func _get_cell_distance(cell_a: Vector2i, cell_b: Vector2i) -> int:
+	return abs(cell_a.x - cell_b.x) + abs(cell_a.y - cell_b.y)
+
+func _get_initial_repath_offset() -> float:
+	return float(get_instance_id() % 7) * 0.01
+
+func _get_move_speed() -> float:
+	if stats_component == null:
+		return move_speed
+	var stat_move_speed: float = stats_component.get_stat(STAT_IDS.MOVE_SPEED)
+	return stat_move_speed if stat_move_speed > 0.0 else move_speed
+
+func _on_stats_died(_source: Node, _context: Dictionary) -> void:
+	queue_free()

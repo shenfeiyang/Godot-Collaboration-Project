@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SkillDefinition" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/skill_definition.gd" id="1_skill_definition"]
+[ext_resource type="Resource" path="res://abilities/skills/data/skill4_fire_effect.tres" id="2_fire_effect"]
+[ext_resource type="Script" path="res://abilities/skills/runtime/skill4_spiral_runner.gd" id="3_runner"]
+
+[resource]
+script = ExtResource("1_skill_definition")
+skill_id = &"skill4"
+display_name = "技能4"
+cooldown = 8.0
+runner_script = ExtResource("3_runner")
+effects = Array[Resource]([ExtResource("2_fire_effect")])
+editor_metadata = {
+"active_duration": 2.0,
+"interval": 0.01
+}

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://0vd6iach35gv"]
 
-[ext_resource type="Texture2D" uid="uid://blfb70dkwort8" path="res://resources/texture/道具ui.png" id="1_3isq2"]
+[ext_resource type="Texture2D" uid="uid://blfb70dkwort8" path="res://assets/texture/道具ui.png" id="1_3isq2"]
 [ext_resource type="Script" uid="uid://tpjwfl42fwl3" path="res://abilities/bullet/bullet.gd" id="1_5on2p"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5on2p"]
@@ -11,9 +11,9 @@ region = Rect2(22, 23, 4, 4)
 radius = 2.0
 
 [node name="Bullet" type="Area2D" unique_id=1456783319]
-script = ExtResource("1_5on2p")
 collision_layer = 0
 collision_mask = 0
+script = ExtResource("1_5on2p")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1929406379]
 texture = SubResource("AtlasTexture_5on2p")

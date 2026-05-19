@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SkillDefinition" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/skill_definition.gd" id="1_skill_definition"]
+[ext_resource type="Resource" path="res://abilities/skills/data/basic_attack_fire_effect.tres" id="2_fire_effect"]
+
+[resource]
+script = ExtResource("1_skill_definition")
+skill_id = &"basic_attack"
+display_name = "普攻"
+is_basic_attack = true
+use_attack_speed_scaling = true
+effects = Array[Resource]([ExtResource("2_fire_effect")])

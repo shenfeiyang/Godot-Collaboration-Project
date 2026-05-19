@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SkillDefinition" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/skill_definition.gd" id="1_skill_definition"]
+[ext_resource type="Resource" path="res://abilities/skills/data/skill2_fire_effect.tres" id="2_fire_effect"]
+
+[resource]
+script = ExtResource("1_skill_definition")
+skill_id = &"skill2"
+display_name = "技能2"
+cooldown = 4.0
+effects = Array[Resource]([ExtResource("2_fire_effect")])

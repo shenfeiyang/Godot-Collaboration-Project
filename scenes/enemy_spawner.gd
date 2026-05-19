@@ -7,8 +7,8 @@ extends Node
 @export var enemy_container_path: NodePath
 # 敌人空间划分管理器路径，供新生成怪物查询局部近邻。
 @export var enemy_spatial_partition_path: NodePath
-# 流场管理器路径，供新生成怪物接入共享寻路方向。
-@export var flow_field_manager_path: NodePath
+# 网格导航服务路径，供新生成怪物接入共享寻路。
+@export var navigation_service_path: NodePath
 
 # 进入场景时是否自动执行一次初始生成。
 @export_group("生成配置")
@@ -28,7 +28,7 @@ extends Node
 var _player: Node2D = null
 var _enemy_container: Node2D = null
 var _enemy_spatial_partition: EnemySpatialPartition = null
-var _flow_field_manager: FlowFieldManager = null
+var _navigation_service: GridNavigationService = null
 var _spawn_position_index: int = 0
 var _spawn_config_queue: Array[EnemySpawnConfig] = []
 var _spawn_queue_index: int = 0
@@ -38,7 +38,7 @@ func _ready() -> void:
 	_player = get_node_or_null(player_path) as Node2D
 	_enemy_container = get_node_or_null(enemy_container_path) as Node2D
 	_enemy_spatial_partition = get_node_or_null(enemy_spatial_partition_path) as EnemySpatialPartition
-	_flow_field_manager = get_node_or_null(flow_field_manager_path) as FlowFieldManager
+	_navigation_service = get_node_or_null(navigation_service_path) as GridNavigationService
 	_rebuild_spawn_queue()
 	if spawn_on_ready:
 		spawn_initial_enemies()
@@ -85,7 +85,7 @@ func _spawn_enemy(config: EnemySpawnConfig) -> void:
 	enemy.global_position = _get_next_spawn_position()
 	enemy.set_target(_player)
 	enemy.set_enemy_spatial_partition(_enemy_spatial_partition)
-	enemy.set_flow_field_manager(_flow_field_manager)
+	enemy.set_navigation_service(_navigation_service)
 
 func _get_next_spawn_position() -> Vector2:
 	var position := initial_spawn_positions[_spawn_position_index % initial_spawn_positions.size()]

@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://ckp7wojg5opw4"]
+
+[ext_resource type="Script" uid="uid://b14cgy8vx2kow" path="res://ui/battle_hud/skill_button_ui.gd" id="1_skill_button_ui"]
+[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/Tilesheets/Small tiles/Thick outline/tilemap.png" id="2_y65hu"]
+[ext_resource type="Script" path="res://ui/battle_hud/cooldown_mask.gd" id="3_cooldown_mask"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3r4py"]
+atlas = ExtResource("2_y65hu")
+region = Rect2(323, 85, 33, 33)
+
+[node name="SkillButtonUI" type="Control" unique_id=867374750]
+custom_minimum_size = Vector2(82, 82)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 82.0
+offset_bottom = 82.0
+script = ExtResource("1_skill_button_ui")
+slot_label = "技能"
+
+[node name="Background" type="TextureRect" parent="." unique_id=416297934]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("AtlasTexture_3r4py")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1988213672]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Margin" unique_id=1258358996]
+layout_mode = 2
+text = "技能"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CooldownOverlay" type="Control" parent="." unique_id=1706002394]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_cooldown_mask")
+
+[node name="CooldownLabel" type="Label" parent="." unique_id=1934282720]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+text = "0.0"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+
+[node name="TouchButton" type="Button" parent="." unique_id=1207804373]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true

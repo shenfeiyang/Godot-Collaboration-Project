@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://b60p78vrm4xgc"]
 
-[ext_resource type="Texture2D" uid="uid://b3x731hw5bcco" path="res://resources/texture/瓦片.png" id="1_uwrxv"]
-[ext_resource type="Texture2D" uid="uid://ditcfocnchaox" path="res://resources/texture/动态瓦片.png" id="2_yqjtg"]
+[ext_resource type="Texture2D" uid="uid://b3x731hw5bcco" path="res://assets/texture/瓦片.png" id="1_uwrxv"]
+[ext_resource type="Texture2D" uid="uid://ditcfocnchaox" path="res://assets/texture/动态瓦片.png" id="2_yqjtg"]
 [ext_resource type="PackedScene" uid="uid://cq1w62mx0khqr" path="res://characters/player/player.tscn" id="3_lnu2h"]
 [ext_resource type="Script" uid="uid://c3hpp5tjpdpk2" path="res://scenes/combat_manager.gd" id="4_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://0vd6iach35gv" path="res://abilities/bullet/bullet.tscn" id="5_iywne"]
@@ -10,9 +10,7 @@
 [ext_resource type="Script" uid="uid://b5w8w3h3dflow" path="res://scenes/flow_field_manager.gd" id="11_flow_field_manager"]
 [ext_resource type="PackedScene" uid="uid://k7n2d0cfau77" path="res://characters/enemies/enemy_yellow.tscn" id="12_dinhu"]
 [ext_resource type="Script" uid="uid://g2vx64lkhyuc" path="res://scenes/enemy_spatial_partition.gd" id="12_enemy_spatial_partition"]
-[ext_resource type="Script" uid="uid://bt7aosxkftcuw" path="res://scenes/flow_field_debug_visualizer.gd" id="13_flow_field_debug_visualizer"]
-[ext_resource type="Script" uid="uid://c52xvcskdfpv" path="res://scenes/steering_debug_visualizer.gd" id="14_steering_debug_visualizer"]
-[ext_resource type="Script" uid="uid://bhyp8qbjaisdi" path="res://scenes/runtime_performance_monitor.gd" id="15_runtime_performance_monitor"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/battle_hud.tscn" id="13_battle_hud"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yqjtg"]
 texture = ExtResource("1_uwrxv")
@@ -162,33 +160,15 @@ bullet_tscn = ExtResource("5_iywne")
 [node name="FlowFieldManager" type="Node" parent="." unique_id=2061023001]
 script = ExtResource("11_flow_field_manager")
 tile_map_path = NodePath("../GroundTileMapLayer")
-player_path = NodePath("../Entities/Player")
-rebuild_radius_in_cells = 24
-
-[node name="FlowFieldDebugVisualizer" type="Node2D" parent="." unique_id=393767568]
-visible = false
-z_index = 20
-script = ExtResource("13_flow_field_debug_visualizer")
-flow_field_manager_path = NodePath("../FlowFieldManager")
-
-[node name="SteeringDebugVisualizer" type="Node2D" parent="." unique_id=2113479084]
-visible = false
-z_index = 21
-script = ExtResource("14_steering_debug_visualizer")
-enemy_container_path = NodePath("../Entities/EnemyContainer")
-
-[node name="RuntimePerformanceMonitor" type="Node" parent="." unique_id=448275911]
-script = ExtResource("15_runtime_performance_monitor")
-flow_field_manager_path = NodePath("../FlowFieldManager")
-enemy_container_path = NodePath("../Entities/EnemyContainer")
-monitor_enabled = false
 
 [node name="EnemySpawner" type="Node" parent="." unique_id=1271132066]
 script = ExtResource("6_p57ef")
 player_path = NodePath("../Entities/Player")
 enemy_container_path = NodePath("../Entities/EnemyContainer")
 enemy_spatial_partition_path = NodePath("../Entities/EnemySpatialPartition")
-flow_field_manager_path = NodePath("../FlowFieldManager")
+navigation_service_path = NodePath("../FlowFieldManager")
 enemy_configs = Array[ExtResource("7_enemy_spawn_config")]([SubResource("Resource_kvuet")])
 initial_spawn_positions = Array[Vector2]([Vector2(8, 296), Vector2(8, 312), Vector2(8, 328), Vector2(8, 344), Vector2(792, 440), Vector2(792, 456), Vector2(792, 472), Vector2(792, 488)])
 max_alive_enemies = 200
+
+[node name="BattleHud" parent="." instance=ExtResource("13_battle_hud")]

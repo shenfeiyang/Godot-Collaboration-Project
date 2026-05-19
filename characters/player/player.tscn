@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://cq1w62mx0khqr"]
 
 [ext_resource type="Script" uid="uid://cgchsium1d8h6" path="res://characters/player/player.gd" id="1_508ok"]
-[ext_resource type="Texture2D" uid="uid://dvv2vh7fryqt5" path="res://resources/texture/W.png" id="2_xxgcw"]
-[ext_resource type="Texture2D" uid="uid://bbkpnwft4s6av" path="res://resources/texture/浮游炮.png" id="3_exd8k"]
+[ext_resource type="Texture2D" uid="uid://dvv2vh7fryqt5" path="res://assets/texture/W.png" id="2_xxgcw"]
+[ext_resource type="Texture2D" uid="uid://bbkpnwft4s6av" path="res://assets/texture/浮游炮.png" id="3_exd8k"]
+[ext_resource type="Script" uid="uid://bdykonbhgn5bi" path="res://scripts/stats/stats_component.gd" id="4_stats_component"]
+[ext_resource type="Resource" path="res://assets/stats/player_stats.tres" id="5_player_stats"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_exd8k"]
 atlas = ExtResource("2_xxgcw")
@@ -339,9 +341,8 @@ animations = [{
 radius = 6.0
 
 [node name="Player" type="CharacterBody2D" unique_id=763065208]
-script = ExtResource("1_508ok")
 collision_layer = 2
-collision_mask = 1
+script = ExtResource("1_508ok")
 
 [node name="BodySprite" type="AnimatedSprite2D" parent="." unique_id=635492716]
 sprite_frames = SubResource("SpriteFrames_jepfe")
@@ -357,6 +358,10 @@ frame_progress = 0.20045704
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1669890856]
 position = Vector2(0, 3)
 shape = SubResource("CircleShape2D_iopkm")
+
+[node name="StatsComponent" type="Node" parent="." unique_id=201337401]
+script = ExtResource("4_stats_component")
+base_stats_config = ExtResource("5_player_stats")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=257572639]
 zoom = Vector2(3, 3)

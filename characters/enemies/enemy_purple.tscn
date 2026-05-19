@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://d3f4hgqvc22ri"]
 
-[ext_resource type="Texture2D" uid="uid://b6i0v4n64tx4t" path="res://resources/texture/源石虫.png" id="1_68cqi"]
+[ext_resource type="Texture2D" uid="uid://b6i0v4n64tx4t" path="res://assets/texture/源石虫.png" id="1_68cqi"]
 [ext_resource type="Script" uid="uid://coy5apupifc10" path="res://characters/enemies/enemy.gd" id="1_gi1at"]
+[ext_resource type="Script" uid="uid://bdykonbhgn5bi" path="res://scripts/stats/stats_component.gd" id="2_stats_component"]
+[ext_resource type="Resource" path="res://assets/stats/enemy_basic_stats.tres" id="3_enemy_stats"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gi1at"]
 atlas = ExtResource("1_68cqi")
@@ -38,14 +40,6 @@ radius = 6.0
 [node name="EnemyPurple" type="CharacterBody2D" unique_id=2132130365]
 collision_layer = 4
 script = ExtResource("1_gi1at")
-faction = null
-move_speed = null
-stop_distance = null
-slow_down_distance = null
-obstacle_probe_distance = null
-obstacle_probe_radius = null
-wall_follow_lock_duration = null
-velocity_smoothing = null
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1958128921]
 sprite_frames = SubResource("SpriteFrames_uli2f")
@@ -53,3 +47,7 @@ autoplay = "default"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2060896900]
 shape = SubResource("CircleShape2D_n06ii")
+
+[node name="StatsComponent" type="Node" parent="." unique_id=672212341]
+script = ExtResource("2_stats_component")
+base_stats_config = ExtResource("3_enemy_stats")

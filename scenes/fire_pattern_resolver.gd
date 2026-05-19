@@ -103,6 +103,11 @@ static func _build_spiral_directions(base_direction: Vector2, config: Dictionary
 	var base_angle_deg: float = spiral_angle_offset_deg + spiral_state_angle_deg
 	if count == 1:
 		return [_rotate_direction(base_direction, base_angle_deg)]
+	if count == 2:
+		return [
+			_rotate_direction(base_direction, base_angle_deg),
+			_rotate_direction(base_direction, base_angle_deg + 180.0),
+		]
 
 	var step_angle: float = 360.0 / float(count)
 	for index in count:

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="FirePatternConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/fire_pattern_config.gd" id="1_fire_pattern"]
+
+[resource]
+script = ExtResource("1_fire_pattern")
+fire_mode = 1
+fan_bullet_count = 5
+fan_total_angle_deg = 60.0

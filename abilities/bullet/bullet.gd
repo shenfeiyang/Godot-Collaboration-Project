@@ -3,6 +3,7 @@ class_name Bullet
 
 const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
 const PHYSICS_LAYERS = preload("res://scripts/physics_layers.gd")
+const COMBAT_MANAGER = preload("res://scenes/combat_manager.gd")
 
 # 子弹命中后统一向外发出事件，方便未来接伤害层或命中特效。
 signal hit_registered(hit_data: Dictionary)
@@ -11,6 +12,12 @@ signal hit_registered(hit_data: Dictionary)
 const SETUP_SPEED_OVERRIDE := "speed_override"
 const SETUP_DAMAGE := "damage"
 const SETUP_EXTRA := "extra"
+const EXTRA_SKILL1_CLUSTER_ENABLED := "skill1_cluster_enabled"
+const EXTRA_SKILL1_CLUSTER_TRIGGER_DISTANCE := "skill1_cluster_trigger_distance"
+const EXTRA_SKILL1_CLUSTER_RING_BULLET_COUNT := "skill1_cluster_ring_bullet_count"
+const EXTRA_SKILL1_CLUSTER_RING_ANGLE_OFFSET_DEG := "skill1_cluster_ring_angle_offset_deg"
+const EXTRA_SKILL1_CLUSTER_BURST_SPEED := "skill1_cluster_burst_speed"
+const EXTRA_CLUSTER_PATTERN_CONFIG := "cluster_pattern_config"
 
 # 子弹基础飞行速度，单位为像素/秒。
 @export var speed: float = 320.0
@@ -31,6 +38,9 @@ var remaining_lifetime: float = 0.0
 var shot_context: Dictionary = {}
 # 命中只允许结算一次，避免射线检测和碰撞信号重复触发时重复上报。
 var has_resolved_hit: bool = false
+var _cluster_trigger_distance: float = 0.0
+var _cluster_has_burst: bool = false
+var _spawn_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	# 绑定区域和刚体两类碰撞信号；运行时状态统一在 setup() 内重置，便于未来接对象池。
@@ -41,10 +51,13 @@ func setup(initial_direction: Vector2, initial_source: Node = null, initial_fact
 	# 由外部在生成子弹后调用，统一注入方向、发射者、阵营与本次发射的覆盖参数。
 	source = initial_source
 	faction = initial_faction
-	current_speed = float(setup_data.get(SETUP_SPEED_OVERRIDE, speed))
+	current_speed = setup_data.get(SETUP_SPEED_OVERRIDE, speed)
 	remaining_lifetime = max_lifetime
 	shot_context = setup_data.duplicate(true)
 	has_resolved_hit = false
+	_cluster_trigger_distance = _get_cluster_extra().get(EXTRA_SKILL1_CLUSTER_TRIGGER_DISTANCE, 0.0)
+	_cluster_has_burst = false
+	_spawn_position = global_position
 	_configure_collision_layers()
 
 	if initial_direction != Vector2.ZERO:
@@ -68,6 +81,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	global_position = next_position
+	if _should_trigger_cluster_burst():
+		_trigger_cluster_burst()
+		return
 
 	# 没有命中任何对象时，也要在超时后自动清理。
 	remaining_lifetime -= delta
@@ -130,10 +146,55 @@ func _handle_hit(target: Variant) -> void:
 		"direction": direction,
 		"source": source,
 		"faction": int(faction),
-		SETUP_DAMAGE: shot_context.get(SETUP_DAMAGE, null),
+		SETUP_DAMAGE: shot_context.get(SETUP_DAMAGE, 0.0),
 		SETUP_EXTRA: shot_context.get(SETUP_EXTRA, {}),
 	})
 	queue_free()
+
+func _get_cluster_extra() -> Dictionary:
+	return shot_context.get(SETUP_EXTRA, {})
+
+func _should_trigger_cluster_burst() -> bool:
+	if _cluster_has_burst:
+		return false
+	var cluster_extra: Dictionary = _get_cluster_extra()
+	if not bool(cluster_extra.get(EXTRA_SKILL1_CLUSTER_ENABLED, false)):
+		return false
+	if _cluster_trigger_distance <= 0.0:
+		return false
+	return global_position.distance_to(_spawn_position) >= _cluster_trigger_distance
+
+func _trigger_cluster_burst() -> void:
+	if _cluster_has_burst:
+		return
+	var cluster_extra: Dictionary = _get_cluster_extra()
+	var combat_manager: Node = get_tree().current_scene.get_node_or_null("CombatManager")
+	if combat_manager != null and combat_manager.has_method("request_fire"):
+		combat_manager.request_fire(_build_cluster_burst_request(cluster_extra))
+	_cluster_has_burst = true
+	queue_free()
+
+func _build_cluster_burst_request(cluster_extra: Dictionary) -> Dictionary:
+	var cluster_pattern_config: Dictionary = _build_cluster_pattern_config(cluster_extra)
+	return {
+		COMBAT_MANAGER.REQUEST_SOURCE: source,
+		COMBAT_MANAGER.REQUEST_SPAWN_POSITION: global_position,
+		COMBAT_MANAGER.REQUEST_DIRECTION: direction,
+		COMBAT_MANAGER.REQUEST_FACTION: int(faction),
+		COMBAT_MANAGER.REQUEST_FIRE_MODE: int(cluster_pattern_config.get(COMBAT_MANAGER.REQUEST_PATTERN_FIRE_MODE, SHARED_ENUMS.FireMode.RING)),
+		COMBAT_MANAGER.REQUEST_PATTERN_CONFIG: cluster_pattern_config,
+		COMBAT_MANAGER.REQUEST_SPEED_OVERRIDE: cluster_extra.get(EXTRA_SKILL1_CLUSTER_BURST_SPEED, current_speed),
+	}
+
+func _build_cluster_pattern_config(cluster_extra: Dictionary) -> Dictionary:
+	var configured_pattern: Variant = cluster_extra.get(EXTRA_CLUSTER_PATTERN_CONFIG, {})
+	if configured_pattern is Dictionary and not configured_pattern.is_empty():
+		return (configured_pattern as Dictionary).duplicate(true)
+	return {
+		COMBAT_MANAGER.REQUEST_PATTERN_FIRE_MODE: SHARED_ENUMS.FireMode.RING,
+		COMBAT_MANAGER.REQUEST_PATTERN_RING_BULLET_COUNT: int(cluster_extra.get(EXTRA_SKILL1_CLUSTER_RING_BULLET_COUNT, 1)),
+		COMBAT_MANAGER.REQUEST_PATTERN_RING_ANGLE_OFFSET_DEG: cluster_extra.get(EXTRA_SKILL1_CLUSTER_RING_ANGLE_OFFSET_DEG, 0.0),
+	}
 
 func _should_ignore_target(target: Variant) -> bool:
 	# 统一判断一个目标是否应该被这颗子弹忽略。

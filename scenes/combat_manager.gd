@@ -2,6 +2,7 @@ extends Node
 
 const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
 const FIRE_PATTERN_RESOLVER = preload("res://scenes/fire_pattern_resolver.gd")
+const STAT_IDS = preload("res://scripts/stats/stat_ids.gd")
 
 # 发射请求里约定使用的字段名，后续怪物或技能节点也按这套键名提交数据。
 const REQUEST_SPAWN_POSITION := "spawn_position"
@@ -13,6 +14,26 @@ const REQUEST_BULLET_SCENE := "bullet_scene"
 const REQUEST_SPEED_OVERRIDE := "speed_override"
 const REQUEST_DAMAGE := "damage"
 const REQUEST_EXTRA := "extra"
+const REQUEST_SPIRAL_BULLET_COUNT_OVERRIDE := "spiral_bullet_count_override"
+const REQUEST_SPIRAL_STEP_ANGLE_DEG_OVERRIDE := "spiral_step_angle_deg_override"
+const REQUEST_RING_BULLET_COUNT_OVERRIDE := "ring_bullet_count_override"
+const REQUEST_RING_ANGLE_OFFSET_DEG_OVERRIDE := "ring_angle_offset_deg_override"
+const REQUEST_PATTERN_CONFIG := "pattern_config"
+const REQUEST_PATTERN_FIRE_MODE := "fire_mode"
+const REQUEST_PATTERN_FAN_BULLET_COUNT := FIRE_PATTERN_RESOLVER.CONFIG_FAN_BULLET_COUNT
+const REQUEST_PATTERN_FAN_TOTAL_ANGLE_DEG := FIRE_PATTERN_RESOLVER.CONFIG_FAN_TOTAL_ANGLE_DEG
+const REQUEST_PATTERN_RING_BULLET_COUNT := FIRE_PATTERN_RESOLVER.CONFIG_RING_BULLET_COUNT
+const REQUEST_PATTERN_RING_ANGLE_OFFSET_DEG := FIRE_PATTERN_RESOLVER.CONFIG_RING_ANGLE_OFFSET_DEG
+const REQUEST_PATTERN_RANDOM_BULLET_COUNT := FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_BULLET_COUNT
+const REQUEST_PATTERN_RANDOM_HALF_ANGLE_DEG := FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_HALF_ANGLE_DEG
+const REQUEST_PATTERN_WAVE_BULLET_COUNT := FIRE_PATTERN_RESOLVER.CONFIG_WAVE_BULLET_COUNT
+const REQUEST_PATTERN_WAVE_TOTAL_ANGLE_DEG := FIRE_PATTERN_RESOLVER.CONFIG_WAVE_TOTAL_ANGLE_DEG
+const REQUEST_PATTERN_WAVE_AMPLITUDE_DEG := FIRE_PATTERN_RESOLVER.CONFIG_WAVE_AMPLITUDE_DEG
+const REQUEST_PATTERN_WAVE_FREQUENCY := FIRE_PATTERN_RESOLVER.CONFIG_WAVE_FREQUENCY
+const REQUEST_PATTERN_SPIRAL_BULLET_COUNT := FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_BULLET_COUNT
+const REQUEST_PATTERN_SPIRAL_STEP_ANGLE_DEG := "spiral_step_angle_deg"
+const REQUEST_PATTERN_SPIRAL_ANGLE_OFFSET_DEG := FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_ANGLE_OFFSET_DEG
+const REQUEST_PATTERN_SPIRAL_STATE_ANGLE_DEG := "spiral_state_angle_deg"
 
 const SPIRAL_STATE_ANGLE_DEG := "spiral_state_angle_deg"
 
@@ -54,28 +75,14 @@ const SPIRAL_STATE_ANGLE_DEG := "spiral_state_angle_deg"
 @export_range(0.0, 360.0, 1.0) var spiral_angle_offset_deg: float = 0.0
 # 子弹统一挂到独立容器下，避免和角色或地块节点混在一起。
 @onready var bullet_container: Node2D = $"../Entities/BulletContainer"
-# 当前场景里的玩家节点暂时仍作为默认发射者接入点；后续怪物可直接调用 request_fire。
-@onready var player = get_tree().current_scene.get_node("Entities/Player")
-
-var current_spiral_angle_deg: float = 0.0
-
-func _ready() -> void:
-	# 现阶段仍监听玩家攻击信号，但真正的发射逻辑已经收口到 request_fire()。
-	player.attack_performed.connect(_on_player_attack)
-
-func _on_player_attack(muzzle_position: Vector2, direction: Vector2, selected_fire_mode: int) -> void:
-	# 玩家信号只负责提供本次开火信息，再包装成统一发射请求交给管理器处理。
-	request_fire(_build_fire_request(player, muzzle_position, direction, selected_fire_mode))
 
 func request_fire(request: Dictionary) -> void:
 	# 所有发射者最终都走这个入口，后续怪物、陷阱或技能节点也复用这条链路。
 	var spawn_position: Vector2 = request.get(REQUEST_SPAWN_POSITION, Vector2.ZERO)
 	var fire_mode := int(_resolve_fire_mode(request))
-	var pattern_config := _build_pattern_config(fire_mode)
+	var pattern_config := _build_pattern_config(request, fire_mode)
 	for shot_direction in FIRE_PATTERN_RESOLVER.build_shot_directions(_get_request_direction(request), fire_mode, pattern_config):
 		_spawn_bullet(request, spawn_position, shot_direction)
-	if fire_mode == SHARED_ENUMS.FireMode.SPIRAL:
-		current_spiral_angle_deg = fposmod(current_spiral_angle_deg + spiral_step_angle_deg, 360.0)
 
 func request_fire_from_source(source: Node, spawn_position: Vector2, direction: Vector2, selected_fire_mode: int = -1, extra: Dictionary = {}) -> void:
 	# 给未来的怪物或其他发射者预留一个更直接的调用入口，避免都自己手拼请求字典。
@@ -93,6 +100,11 @@ func _build_fire_request(source: Node, spawn_position: Vector2, direction: Vecto
 	if source != null and "faction" in source:
 		request[REQUEST_FACTION] = int(source.faction)
 
+	if source is Node:
+		var source_stats: StatsComponent = source.get_node_or_null("StatsComponent") as StatsComponent
+		if source_stats != null:
+			request[REQUEST_DAMAGE] = source_stats.get_stat(STAT_IDS.ATTACK)
+
 	for key in extra:
 		request[key] = extra[key]
 
@@ -103,6 +115,11 @@ func _resolve_fire_mode(request: Dictionary) -> int:
 	var selected_fire_mode: int = int(request.get(REQUEST_FIRE_MODE, -1))
 	if selected_fire_mode >= SHARED_ENUMS.FireMode.SINGLE and selected_fire_mode <= SHARED_ENUMS.FireMode.SPIRAL:
 		return selected_fire_mode
+	if request.has(REQUEST_PATTERN_CONFIG):
+		var pattern_config: Dictionary = request.get(REQUEST_PATTERN_CONFIG, {})
+		var pattern_fire_mode: int = int(pattern_config.get(REQUEST_PATTERN_FIRE_MODE, -1))
+		if pattern_fire_mode >= SHARED_ENUMS.FireMode.SINGLE and pattern_fire_mode <= SHARED_ENUMS.FireMode.SPIRAL:
+			return pattern_fire_mode
 
 	return _get_source_fire_mode(request)
 
@@ -123,30 +140,44 @@ func _get_request_direction(request: Dictionary) -> Vector2:
 
 	return normalized_direction
 
-func _build_pattern_config(fire_mode: int) -> Dictionary:
-	# 统一从 Inspector 导出的参数组装模式配置，交给独立解析器计算方向。
+func _build_pattern_config(request: Dictionary, fire_mode: int) -> Dictionary:
+	# 优先读取技能请求自带的模式配置；未覆盖时再回退到场景默认值。
+	var request_pattern_config: Dictionary = request.get(REQUEST_PATTERN_CONFIG, {})
 	return {
-		FIRE_PATTERN_RESOLVER.CONFIG_FAN_BULLET_COUNT: fan_bullet_count,
-		FIRE_PATTERN_RESOLVER.CONFIG_FAN_TOTAL_ANGLE_DEG: fan_total_angle_deg,
-		FIRE_PATTERN_RESOLVER.CONFIG_RING_BULLET_COUNT: ring_bullet_count,
-		FIRE_PATTERN_RESOLVER.CONFIG_RING_ANGLE_OFFSET_DEG: ring_angle_offset_deg,
-		FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_BULLET_COUNT: random_bullet_count,
-		FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_HALF_ANGLE_DEG: random_half_angle_deg,
-		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_BULLET_COUNT: wave_bullet_count,
-		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_TOTAL_ANGLE_DEG: wave_total_angle_deg,
-		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_AMPLITUDE_DEG: wave_amplitude_deg,
-		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_FREQUENCY: wave_frequency,
-		FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_BULLET_COUNT: spiral_bullet_count,
-		FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_ANGLE_OFFSET_DEG: spiral_angle_offset_deg,
-		SPIRAL_STATE_ANGLE_DEG: _get_spiral_state_angle_deg(fire_mode),
+		FIRE_PATTERN_RESOLVER.CONFIG_FAN_BULLET_COUNT: int(request_pattern_config.get(REQUEST_PATTERN_FAN_BULLET_COUNT, fan_bullet_count)),
+		FIRE_PATTERN_RESOLVER.CONFIG_FAN_TOTAL_ANGLE_DEG: float(request_pattern_config.get(REQUEST_PATTERN_FAN_TOTAL_ANGLE_DEG, fan_total_angle_deg)),
+		FIRE_PATTERN_RESOLVER.CONFIG_RING_BULLET_COUNT: _get_ring_bullet_count(request, request_pattern_config),
+		FIRE_PATTERN_RESOLVER.CONFIG_RING_ANGLE_OFFSET_DEG: _get_ring_angle_offset_deg(request, request_pattern_config),
+		FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_BULLET_COUNT: int(request_pattern_config.get(REQUEST_PATTERN_RANDOM_BULLET_COUNT, random_bullet_count)),
+		FIRE_PATTERN_RESOLVER.CONFIG_RANDOM_HALF_ANGLE_DEG: float(request_pattern_config.get(REQUEST_PATTERN_RANDOM_HALF_ANGLE_DEG, random_half_angle_deg)),
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_BULLET_COUNT: int(request_pattern_config.get(REQUEST_PATTERN_WAVE_BULLET_COUNT, wave_bullet_count)),
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_TOTAL_ANGLE_DEG: float(request_pattern_config.get(REQUEST_PATTERN_WAVE_TOTAL_ANGLE_DEG, wave_total_angle_deg)),
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_AMPLITUDE_DEG: float(request_pattern_config.get(REQUEST_PATTERN_WAVE_AMPLITUDE_DEG, wave_amplitude_deg)),
+		FIRE_PATTERN_RESOLVER.CONFIG_WAVE_FREQUENCY: float(request_pattern_config.get(REQUEST_PATTERN_WAVE_FREQUENCY, wave_frequency)),
+		FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_BULLET_COUNT: _get_spiral_bullet_count(request, request_pattern_config),
+		FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_ANGLE_OFFSET_DEG: float(request_pattern_config.get(REQUEST_PATTERN_SPIRAL_ANGLE_OFFSET_DEG, spiral_angle_offset_deg)),
+		SPIRAL_STATE_ANGLE_DEG: _get_spiral_state_angle_deg(request, fire_mode, request_pattern_config),
 	}
 
-func _get_spiral_state_angle_deg(fire_mode: int) -> float:
-	# 只有螺旋模式才使用持续推进的角度状态，其他模式统一视为 0。
+func _get_spiral_state_angle_deg(request: Dictionary, fire_mode: int, request_pattern_config: Dictionary) -> float:
+	# 螺旋角度状态优先使用技能运行时传入的值；未提供时再回退到场景默认行为。
 	if fire_mode != SHARED_ENUMS.FireMode.SPIRAL:
 		return 0.0
+	return float(request_pattern_config.get(REQUEST_PATTERN_SPIRAL_STATE_ANGLE_DEG, 0.0))
 
-	return current_spiral_angle_deg
+func _get_spiral_bullet_count(request: Dictionary, request_pattern_config: Dictionary) -> int:
+	var pattern_value: int = int(request_pattern_config.get(REQUEST_PATTERN_SPIRAL_BULLET_COUNT, spiral_bullet_count))
+	var override_value: int = int(request.get(REQUEST_SPIRAL_BULLET_COUNT_OVERRIDE, pattern_value))
+	return max(override_value, 1)
+
+func _get_ring_bullet_count(request: Dictionary, request_pattern_config: Dictionary) -> int:
+	var pattern_value: int = int(request_pattern_config.get(REQUEST_PATTERN_RING_BULLET_COUNT, ring_bullet_count))
+	var override_value: int = int(request.get(REQUEST_RING_BULLET_COUNT_OVERRIDE, pattern_value))
+	return max(override_value, 1)
+
+func _get_ring_angle_offset_deg(request: Dictionary, request_pattern_config: Dictionary) -> float:
+	var pattern_value: float = float(request_pattern_config.get(REQUEST_PATTERN_RING_ANGLE_OFFSET_DEG, ring_angle_offset_deg))
+	return float(request.get(REQUEST_RING_ANGLE_OFFSET_DEG_OVERRIDE, pattern_value))
 
 func _spawn_bullet(request: Dictionary, spawn_position: Vector2, shot_direction: Vector2) -> void:
 	# 所有子弹都通过统一入口实例化，后续接对象池时只需要替换这一层。
@@ -162,6 +193,8 @@ func _spawn_bullet(request: Dictionary, spawn_position: Vector2, shot_direction:
 		_get_request_faction(request),
 		_build_bullet_setup_data(request)
 	)
+	if bullet.has_signal("hit_registered") and not bullet.hit_registered.is_connected(_on_bullet_hit_registered):
+		bullet.hit_registered.connect(_on_bullet_hit_registered)
 	bullet_container.add_child(bullet)
 
 func _get_request_source(request: Dictionary) -> Node:
@@ -198,3 +231,28 @@ func _build_bullet_setup_data(request: Dictionary) -> Dictionary:
 		setup_data[REQUEST_EXTRA] = request[REQUEST_EXTRA]
 
 	return setup_data
+
+func _on_bullet_hit_registered(hit_data: Dictionary) -> void:
+	var target = hit_data.get("target", null)
+	if target == null or not target is Node:
+		return
+	var stats_component: StatsComponent = target.get_node_or_null("StatsComponent") as StatsComponent
+	if stats_component == null:
+		return
+
+	var source = hit_data.get("source", null)
+	var attack_value: float = 0.0
+	if source is Node:
+		var source_stats: StatsComponent = source.get_node_or_null("StatsComponent") as StatsComponent
+		if source_stats != null:
+			attack_value = source_stats.get_stat(STAT_IDS.ATTACK)
+
+	var damage_value: float = hit_data.get(REQUEST_DAMAGE, 0.0)
+	stats_component.apply_damage({
+		"source": source,
+		"damage": damage_value,
+		"attack": attack_value,
+		"position": hit_data.get("position", Vector2.ZERO),
+		"direction": hit_data.get("direction", Vector2.ZERO),
+		"extra": hit_data.get(REQUEST_EXTRA, {}),
+	})
