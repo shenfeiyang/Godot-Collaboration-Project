@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://dvv2vh7fryqt5" path="res://assets/texture/W.png" id="2_xxgcw"]
 [ext_resource type="Texture2D" uid="uid://bbkpnwft4s6av" path="res://assets/texture/浮游炮.png" id="3_exd8k"]
 [ext_resource type="Script" uid="uid://bdykonbhgn5bi" path="res://scripts/stats/stats_component.gd" id="4_stats_component"]
-[ext_resource type="Resource" path="res://assets/stats/player_stats.tres" id="5_player_stats"]
+[ext_resource type="Resource" uid="uid://p6jo10lewkaj" path="res://assets/stats/player_stats.tres" id="5_player_stats"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_exd8k"]
 atlas = ExtResource("2_xxgcw")
@@ -219,7 +219,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"normal_down",
-"speed": 5.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -346,7 +346,7 @@ script = ExtResource("1_508ok")
 
 [node name="BodySprite" type="AnimatedSprite2D" parent="." unique_id=635492716]
 sprite_frames = SubResource("SpriteFrames_jepfe")
-animation = &"normal_down"
+animation = &"normal_up"
 autoplay = "normal_right"
 
 [node name="ArmedEffectSprite" type="AnimatedSprite2D" parent="." unique_id=87474286]

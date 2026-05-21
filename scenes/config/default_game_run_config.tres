@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GameRunConfig" format=3 uid="uid://c158uuhuakk4a"]
+
+[ext_resource type="Script" uid="uid://bsnwcnft7r4qj" path="res://scenes/config/game_run_config.gd" id="1_game_run_config"]
+[ext_resource type="Script" uid="uid://hkr2ufrallr8" path="res://assets/equipment/equipment_definition.gd" id="1_hxq7j"]
+[ext_resource type="Resource" path="res://assets/stats/generated/player_stats_from_excel.tres" id="2_player_stats"]
+[ext_resource type="Resource" path="res://assets/equipment/generated/eq_1_1_1.tres" id="3_equipment"]
+[ext_resource type="Resource" uid="uid://dgusfdree2oxx" path="res://scenes/config/stages/default_stage_spawn_config.tres" id="4_stage_spawn_config"]
+
+[resource]
+script = ExtResource("1_game_run_config")
+player_base_stats = ExtResource("2_player_stats")
+equipped_items = Array[ExtResource("1_hxq7j")]([ExtResource("3_equipment")])
+stage_spawn_config = ExtResource("4_stage_spawn_config")

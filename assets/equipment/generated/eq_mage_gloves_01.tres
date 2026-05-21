@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EquipmentDefinition" format=3]
+
+[ext_resource type="Script" path="res://assets/equipment/equipment_definition.gd" id="1_equipment_definition"]
+[ext_resource type="Script" path="res://scripts/stats/stat_modifier_config.gd" id="2_stat_modifier_config"]
+[ext_resource type="Texture2D" path="res://assets/texture/all_icon.png" id="3_icon_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
+atlas = ExtResource("3_icon_atlas")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="Resource" id="StatModifier_1"]
+script = ExtResource("2_stat_modifier_config")
+stat_id = &"attack"
+operation = 0
+value = 5.0
+
+[resource]
+script = ExtResource("1_equipment_definition")
+equipment_id = &"eq_mage_gloves_01"
+display_name = "导能护手"
+icon = SubResource("AtlasTexture_icon")
+rarity = 2
+slot_type = &"gloves"
+granted_skills = Array[Resource]([])
+stat_modifiers = Array[Resource]([SubResource("StatModifier_1")])

@@ -4,6 +4,7 @@ class_name Enemy
 const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
 const PHYSICS_LAYERS = preload("res://scripts/physics_layers.gd")
 const STAT_IDS = preload("res://scripts/stats/stat_ids.gd")
+const DEATH_EFFECT_SCENE = preload("res://characters/enemies/death_effect.tscn")
 
 static var _debug_physics_total_usec: int = 0
 static var _debug_physics_count: int = 0
@@ -17,6 +18,12 @@ static var _debug_last_physics_usec: int = 0
 @export var stop_distance: float = 8.0
 # 进入停止距离前开始提前减速，降低贴脸时的来回抖动。
 @export var slow_down_distance: float = 30.0
+# 贴近目标后两次近战伤害之间的最小间隔。
+@export var attack_cooldown: float = 0.8
+# 在 stop_distance 基础上额外允许的近战攻击范围。
+@export var attack_range_buffer: float = 4.0
+# 近战固定伤害；小于等于 0 时回退到自身攻击属性。
+@export var attack_damage_override: float = 0.0
 
 @export_group("网格导航")
 # 多久允许重算一次路径，避免所有敌人每帧同时寻路。
@@ -57,6 +64,7 @@ var _last_target_cell: Vector2i = GridNavigationService.INVALID_CELL
 var _last_path_start_cell: Vector2i = GridNavigationService.INVALID_CELL
 var _path_reference_distance: float = INF
 var _path_stuck_time: float = 0.0
+var _attack_cooldown_remaining: float = 0.0
 
 func set_target(new_target: Node2D) -> void:
 	target = new_target
@@ -83,6 +91,7 @@ func _exit_tree() -> void:
 
 func _physics_process(delta: float) -> void:
 	var started_usec := Time.get_ticks_usec()
+	_attack_cooldown_remaining = max(_attack_cooldown_remaining - delta, 0.0)
 	if stats_component != null and stats_component.is_dead():
 		_reset_navigation_state()
 		velocity = Vector2.ZERO
@@ -105,6 +114,7 @@ func _physics_process(delta: float) -> void:
 		_cached_desired_velocity = Vector2.ZERO
 		_cached_separation_velocity = _get_separation_velocity()
 		_apply_seek_velocity(_cached_separation_velocity)
+		_try_attack_target(target, distance_to_target)
 		move_and_slide()
 		_update_partition_position()
 		_update_facing(velocity)
@@ -251,6 +261,34 @@ func _apply_seek_velocity(target_velocity: Vector2) -> void:
 		target_velocity = target_velocity.normalized() * move_speed
 	velocity = velocity.lerp(target_velocity, velocity_smoothing)
 
+func _try_attack_target(current_target: Node2D, distance_to_target: float) -> void:
+	if _attack_cooldown_remaining > 0.0:
+		return
+	if current_target == null or not is_instance_valid(current_target):
+		return
+	var target_stats: StatsComponent = current_target.get_node_or_null("StatsComponent") as StatsComponent
+	if target_stats == null or target_stats.is_dead():
+		return
+	if stats_component == null or stats_component.is_dead():
+		return
+	if distance_to_target > stop_distance + max(attack_range_buffer, 0.0):
+		return
+	var attack_direction: Vector2 = (current_target.global_position - global_position).normalized()
+	if attack_direction == Vector2.ZERO:
+		attack_direction = Vector2.RIGHT
+	var damage_packet: Dictionary = {
+		"source": self,
+		"attack": stats_component.get_stat(STAT_IDS.ATTACK),
+		"position": global_position,
+		"direction": attack_direction,
+		"extra": {"damage_type": "melee"},
+	}
+	if attack_damage_override > 0.0:
+		damage_packet["damage"] = attack_damage_override
+	var attack_result: Dictionary = target_stats.apply_damage(damage_packet)
+	if float(attack_result.get("applied_damage", 0.0)) > 0.0:
+		_attack_cooldown_remaining = attack_cooldown
+
 func _update_partition_position() -> void:
 	if enemy_spatial_partition == null:
 		return
@@ -323,4 +361,10 @@ func _get_move_speed() -> float:
 	return stat_move_speed if stat_move_speed > 0.0 else move_speed
 
 func _on_stats_died(_source: Node, _context: Dictionary) -> void:
+	var effect_parent := get_parent()
+	if effect_parent != null and DEATH_EFFECT_SCENE != null:
+		var death_effect := DEATH_EFFECT_SCENE.instantiate() as Node2D
+		if death_effect != null:
+			effect_parent.add_child(death_effect)
+			death_effect.global_position = global_position
 	queue_free()

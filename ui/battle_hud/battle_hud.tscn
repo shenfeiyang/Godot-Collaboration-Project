@@ -2,15 +2,57 @@
 
 [ext_resource type="Script" uid="uid://bb4aiikrcerhy" path="res://ui/battle_hud/battle_hud.gd" id="1_battle_hud"]
 [ext_resource type="PackedScene" uid="uid://ckp7wojg5opw4" path="res://ui/battle_hud/skill_button_ui.tscn" id="2_skill_button_ui"]
-[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/Tilesheets/Small tiles/Thick outline/tilemap.png" id="3_refj2"]
 [ext_resource type="Script" uid="uid://clpgrtfrx41fr" path="res://ui/battle_hud/virtual_joystick.gd" id="3_virtual_joystick"]
+[ext_resource type="PackedScene" uid="uid://cwjtg7koosn3e" path="res://ui/inventory_panel.tscn" id="4_inventory_panel"]
+[ext_resource type="Texture2D" uid="uid://4svsp8dqk2wl" path="res://assets/texture/icon.png" id="5_player_icon"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_portrait_panel"]
+bg_color = Color(0.18, 0.22, 0.32, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.86, 0.78, 0.52, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_refj2"]
+load_path = "res://.godot/imported/tilemap.png-6456e3f9b25a5804a3c849d1e71b654d.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hp_bar_bg"]
+atlas = SubResource("CompressedTexture2D_refj2")
+region = Rect2(2, 53, 12, 12)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hp_bar_bg"]
+texture = SubResource("AtlasTexture_hp_bar_bg")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+region_rect = Rect2(0, 0, 12, 12)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_16hgb"]
+bg_color = Color(0.54509807, 0.13333334, 0.12941177, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7coma"]
+bg_color = Color(0.24146011, 0.6472369, 0.8348412, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_refj2"]
-atlas = ExtResource("3_refj2")
+atlas = SubResource("CompressedTexture2D_refj2")
 region = Rect2(324, 52, 31, 31)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_16hgb"]
-atlas = ExtResource("3_refj2")
+atlas = SubResource("CompressedTexture2D_refj2")
 region = Rect2(221, 51, 16, 16)
 
 [node name="BattleHud" type="CanvasLayer" unique_id=723865427]
@@ -40,13 +82,32 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="PortraitBlock" type="PanelContainer" parent="Root/TopLeft/TopLeftVBox/TopRow" unique_id=1194614988]
-custom_minimum_size = Vector2(72, 72)
+custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_portrait_panel")
 
-[node name="Portrait" type="ColorRect" parent="Root/TopLeft/TopLeftVBox/TopRow/PortraitBlock" unique_id=1040367116]
+[node name="PortraitMargin" type="MarginContainer" parent="Root/TopLeft/TopLeftVBox/TopRow/PortraitBlock" unique_id=1483679152]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="PortraitPlate" type="ColorRect" parent="Root/TopLeft/TopLeftVBox/TopRow/PortraitBlock/PortraitMargin" unique_id=173583601]
 custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
-color = Color(0.25, 0.35, 0.55, 1)
+color = Color(0.12, 0.16, 0.24, 1)
+
+[node name="Portrait" type="TextureRect" parent="Root/TopLeft/TopLeftVBox/TopRow/PortraitBlock/PortraitMargin/PortraitPlate" unique_id=1040367116]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_player_icon")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="StatusBlock" type="VBoxContainer" parent="Root/TopLeft/TopLeftVBox/TopRow" unique_id=2009553077]
 custom_minimum_size = Vector2(150, 72)
@@ -60,6 +121,8 @@ text = "HP 0 / 0"
 [node name="HpBar" type="ProgressBar" parent="Root/TopLeft/TopLeftVBox/TopRow/StatusBlock" unique_id=2144382204]
 custom_minimum_size = Vector2(150, 18)
 layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxTexture_hp_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_16hgb")
 value = 100.0
 show_percentage = false
 
@@ -70,6 +133,8 @@ text = "MP 0 / 0"
 [node name="EnergyBar" type="ProgressBar" parent="Root/TopLeft/TopLeftVBox/TopRow/StatusBlock" unique_id=1988600854]
 custom_minimum_size = Vector2(150, 18)
 layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxTexture_hp_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_7coma")
 value = 100.0
 show_percentage = false
 
@@ -204,3 +269,6 @@ offset_right = 468.0
 offset_bottom = 134.0
 slot_index = 4
 slot_label = "技能4"
+
+[node name="InventoryPanel" parent="Root" unique_id=736188318 instance=ExtResource("4_inventory_panel")]
+layout_mode = 1

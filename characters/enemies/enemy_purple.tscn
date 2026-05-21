@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://b6i0v4n64tx4t" path="res://assets/texture/源石虫.png" id="1_68cqi"]
 [ext_resource type="Script" uid="uid://coy5apupifc10" path="res://characters/enemies/enemy.gd" id="1_gi1at"]
 [ext_resource type="Script" uid="uid://bdykonbhgn5bi" path="res://scripts/stats/stats_component.gd" id="2_stats_component"]
-[ext_resource type="Resource" path="res://assets/stats/enemy_basic_stats.tres" id="3_enemy_stats"]
+[ext_resource type="Resource" uid="uid://ct2qlrmq78djm" path="res://assets/stats/enemy_basic_stats.tres" id="3_enemy_stats"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gi1at"]
 atlas = ExtResource("1_68cqi")
@@ -31,7 +31,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"default",
-"speed": 5.0
+"speed": 8.0
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_n06ii"]

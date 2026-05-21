@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://ckp7wojg5opw4"]
 
 [ext_resource type="Script" uid="uid://b14cgy8vx2kow" path="res://ui/battle_hud/skill_button_ui.gd" id="1_skill_button_ui"]
-[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/Tilesheets/Small tiles/Thick outline/tilemap.png" id="2_y65hu"]
-[ext_resource type="Script" path="res://ui/battle_hud/cooldown_mask.gd" id="3_cooldown_mask"]
+[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/tilemap.png" id="2_y65hu"]
+[ext_resource type="Script" uid="uid://dqidld56lcivv" path="res://ui/battle_hud/cooldown_mask.gd" id="3_cooldown_mask"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3r4py"]
 atlas = ExtResource("2_y65hu")

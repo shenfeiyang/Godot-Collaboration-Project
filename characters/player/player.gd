@@ -81,6 +81,9 @@ func _ready() -> void:
 	_update_armed_effect()
 	_update_animation()
 
+func apply_configured_skill_definitions(definitions: Array[SkillDefinition]) -> void:
+	skill_definitions = definitions.duplicate()
+
 func _physics_process(delta: float) -> void:
 	if stats_component != null and stats_component.is_dead():
 		_update_armed_effect()

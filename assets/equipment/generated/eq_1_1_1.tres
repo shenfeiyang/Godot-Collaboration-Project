@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EquipmentDefinition" format=3 uid="uid://cdvxrsceksi0m"]
+
+[ext_resource type="Script" uid="uid://6wxo5vvvgjdm" path="res://abilities/skills/definitions/skill_definition.gd" id="1_asktt"]
+[ext_resource type="Script" uid="uid://hkr2ufrallr8" path="res://assets/equipment/equipment_definition.gd" id="1_equipment_definition"]
+[ext_resource type="Script" uid="uid://i3y80rhi1lgb" path="res://scripts/stats/stat_modifier_config.gd" id="2_stat_modifier_config"]
+[ext_resource type="Texture2D" uid="uid://rciar6spg3hd" path="res://assets/texture/all_icon.png" id="3_icon_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
+atlas = ExtResource("3_icon_atlas")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="Resource" id="StatModifier_1"]
+script = ExtResource("2_stat_modifier_config")
+stat_id = &"attack"
+value = 15.0
+
+[resource]
+script = ExtResource("1_equipment_definition")
+equipment_id = &"eq_1_1_1"
+display_name = "白色法杖_01"
+icon = SubResource("AtlasTexture_icon")
+slot_type = &"weapon"
+stat_modifiers = Array[ExtResource("2_stat_modifier_config")]([SubResource("StatModifier_1")])

@@ -159,7 +159,7 @@ func _build_pattern_config(request: Dictionary, fire_mode: int) -> Dictionary:
 		SPIRAL_STATE_ANGLE_DEG: _get_spiral_state_angle_deg(request, fire_mode, request_pattern_config),
 	}
 
-func _get_spiral_state_angle_deg(request: Dictionary, fire_mode: int, request_pattern_config: Dictionary) -> float:
+func _get_spiral_state_angle_deg(_request: Dictionary, fire_mode: int, request_pattern_config: Dictionary) -> float:
 	# 螺旋角度状态优先使用技能运行时传入的值；未提供时再回退到场景默认行为。
 	if fire_mode != SHARED_ENUMS.FireMode.SPIRAL:
 		return 0.0

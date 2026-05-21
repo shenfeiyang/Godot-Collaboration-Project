@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EquipmentDefinition" format=3 uid="uid://ccvvnd1m5qls0"]
+
+[ext_resource type="Script" uid="uid://hkr2ufrallr8" path="res://assets/equipment/equipment_definition.gd" id="1_equipment_definition"]
+[ext_resource type="Script" uid="uid://6wxo5vvvgjdm" path="res://abilities/skills/definitions/skill_definition.gd" id="1_s1ogi"]
+[ext_resource type="Resource" path="res://abilities/skills/data/skill1_definition.tres" id="2_skill_definition"]
+[ext_resource type="Script" uid="uid://i3y80rhi1lgb" path="res://scripts/stats/stat_modifier_config.gd" id="4_bgele"]
+
+[resource]
+script = ExtResource("1_equipment_definition")
+equipment_id = &"training_staff"
+display_name = "训练法杖"
+slot_type = &"weapon"
+granted_skills = Array[ExtResource("1_s1ogi")]([ExtResource("2_skill_definition")])

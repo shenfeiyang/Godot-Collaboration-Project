@@ -1,0 +1,127 @@
+[gd_scene format=3 uid="uid://bie6tdc5ljp6f"]
+
+[ext_resource type="Script" uid="uid://cijrktvocsixj" path="res://ui/inventory_slot_ui.gd" id="1_inventory_slot_ui"]
+[ext_resource type="Texture2D" uid="uid://rciar6spg3hd" path="res://assets/texture/all_icon.png" id="2_mn58r"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_refj2"]
+load_path = "res://.godot/imported/tilemap.png-6456e3f9b25a5804a3c849d1e71b654d.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_inventory_slot_bg"]
+atlas = SubResource("CompressedTexture2D_refj2")
+region = Rect2(306, 0, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_inventory_slot"]
+texture = SubResource("AtlasTexture_inventory_slot_bg")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vggnq"]
+atlas = ExtResource("2_mn58r")
+region = Rect2(0, 0, 16, 16)
+
+[node name="InventorySlotUI" type="Control" unique_id=1820061066]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 60.0
+offset_bottom = 60.0
+script = ExtResource("1_inventory_slot_ui")
+
+[node name="Background" type="PanelContainer" parent="." unique_id=1363499646]
+modulate = Color(1, 1, 1, 0.92)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_inventory_slot")
+
+[node name="QualityColor" type="ColorRect" parent="." unique_id=1882089101]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1177834610]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Icon" type="TextureRect" parent="Margin" unique_id=1773836613]
+modulate = Color(0.28, 0.28, 0.28, 0.85)
+layout_mode = 2
+texture = SubResource("AtlasTexture_vggnq")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="." unique_id=1364196637]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 12
+text = "武器"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CountLabel" type="Label" parent="." unique_id=891932894]
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -28.0
+offset_top = -22.0
+offset_right = -6.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
+text = "1"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TouchButton" type="Button" parent="." unique_id=687426348]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true

@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://k7n2d0cfau77" path="res://characters/enemies/enemy_yellow.tscn" id="12_dinhu"]
 [ext_resource type="Script" uid="uid://g2vx64lkhyuc" path="res://scenes/enemy_spatial_partition.gd" id="12_enemy_spatial_partition"]
 [ext_resource type="PackedScene" path="res://ui/battle_hud/battle_hud.tscn" id="13_battle_hud"]
+[ext_resource type="Script" path="res://scenes/game_config_bootstrap.gd" id="14_game_config_bootstrap"]
+[ext_resource type="Resource" path="res://scenes/config/default_game_run_config.tres" id="15_game_run_config"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yqjtg"]
 texture = ExtResource("1_uwrxv")
@@ -167,8 +169,12 @@ player_path = NodePath("../Entities/Player")
 enemy_container_path = NodePath("../Entities/EnemyContainer")
 enemy_spatial_partition_path = NodePath("../Entities/EnemySpatialPartition")
 navigation_service_path = NodePath("../FlowFieldManager")
-enemy_configs = Array[ExtResource("7_enemy_spawn_config")]([SubResource("Resource_kvuet")])
-initial_spawn_positions = Array[Vector2]([Vector2(8, 296), Vector2(8, 312), Vector2(8, 328), Vector2(8, 344), Vector2(792, 440), Vector2(792, 456), Vector2(792, 472), Vector2(792, 488)])
 max_alive_enemies = 200
+
+[node name="ConfigBootstrap" type="Node" parent="." unique_id=1931148701]
+script = ExtResource("14_game_config_bootstrap")
+game_run_config = ExtResource("15_game_run_config")
+player_path = NodePath("../Entities/Player")
+enemy_spawner_path = NodePath("../EnemySpawner")
 
 [node name="BattleHud" parent="." instance=ExtResource("13_battle_hud")]

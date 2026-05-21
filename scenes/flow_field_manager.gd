@@ -270,7 +270,7 @@ func _heap_push(cells: Array[Vector2i], priorities: Array[float], cell: Vector2i
 	priorities.append(priority)
 	var index: int = cells.size() - 1
 	while index > 0:
-		var parent_index: int = (index - 1) / 2
+		var parent_index: int = int((index - 1) / 2.0)
 		if priorities[parent_index] <= priorities[index]:
 			break
 		_heap_swap(cells, priorities, index, parent_index)

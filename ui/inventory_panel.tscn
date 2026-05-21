@@ -1,0 +1,365 @@
+[gd_scene format=3 uid="uid://cwjtg7koosn3e"]
+
+[ext_resource type="Script" uid="uid://cei2vaaxufc4d" path="res://ui/inventory_panel.gd" id="1_inventory_panel"]
+[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/tilemap.png" id="2_2054l"]
+[ext_resource type="StyleBox" uid="uid://d0uifw73nd8wv" path="res://ui/common_style/tab_unselect.tres" id="2_ang1s"]
+[ext_resource type="StyleBox" uid="uid://ynylneb05tk3" path="res://ui/common_style/tab_select.tres" id="3_hc366"]
+[ext_resource type="StyleBox" uid="uid://rv261kh3w0up" path="res://ui/common_style/close_btn.tres" id="4_hc366"]
+[ext_resource type="PackedScene" path="res://ui/equipment_slot_shell.tscn" id="5_equipment_slot_shell"]
+[ext_resource type="PackedScene" path="res://ui/item_details_panel.tscn" id="6_item_details_panel"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_refj2"]
+load_path = "res://.godot/imported/tilemap.png-6456e3f9b25a5804a3c849d1e71b654d.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_inventory_panel_bg"]
+resource_local_to_scene = true
+atlas = SubResource("CompressedTexture2D_refj2")
+region = Rect2(221, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_inventory_panel"]
+texture = SubResource("AtlasTexture_inventory_panel_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_equipment_panel_bg"]
+resource_local_to_scene = true
+atlas = SubResource("CompressedTexture2D_refj2")
+region = Rect2(187, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_equipment_panel"]
+texture = SubResource("AtlasTexture_equipment_panel_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_stats_panel_bg"]
+resource_local_to_scene = true
+atlas = SubResource("CompressedTexture2D_refj2")
+region = Rect2(170, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_stats_panel"]
+texture = SubResource("AtlasTexture_stats_panel_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b2tsc"]
+atlas = ExtResource("2_2054l")
+region = Rect2(187, 0, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_2y21e"]
+texture = SubResource("AtlasTexture_b2tsc")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+
+[node name="InventoryPanel" type="Control" unique_id=878397833]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_inventory_panel")
+
+[node name="Root" type="ColorRect" parent="." unique_id=1940584973]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.49019608)
+
+[node name="Panel" type="PanelContainer" parent="Root" unique_id=752292260]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -297.0
+offset_right = 542.0
+offset_bottom = 297.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxTexture_inventory_panel")
+
+[node name="Content" type="HBoxContainer" parent="Root/Panel" unique_id=437221554]
+layout_mode = 2
+
+[node name="Left" type="VBoxContainer" parent="Root/Panel/Content" unique_id=1621793930]
+layout_mode = 2
+
+[node name="EquipmentPanel" type="Control" parent="Root/Panel/Content/Left" unique_id=146431210]
+clip_contents = true
+custom_minimum_size = Vector2(330, 340)
+layout_mode = 2
+
+[node name="EquipmentPanelBackground" type="PanelContainer" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=1957001001]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_equipment_panel")
+
+[node name="Portrait" type="AnimatedSprite2D" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=786290852]
+position = Vector2(165, 170)
+scale = Vector2(5, 5)
+
+[node name="HeadSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=191367410 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -30.0
+offset_top = 16.0
+offset_right = 30.0
+offset_bottom = 76.0
+grow_horizontal = 2
+
+[node name="WeaponSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=157044331 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+offset_left = 26.0
+offset_top = 40.0
+offset_right = 86.0
+offset_bottom = 100.0
+
+[node name="HandsSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=770802455 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+offset_left = 26.0
+offset_top = 117.0
+offset_right = 86.0
+offset_bottom = 177.0
+
+[node name="RingSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=1988687398 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+offset_left = 26.0
+offset_top = 192.0
+offset_right = 86.0
+offset_bottom = 252.0
+
+[node name="ChestSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=527223002 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -86.0
+offset_top = 40.0
+offset_right = -26.0
+offset_bottom = 100.0
+grow_horizontal = 0
+
+[node name="NeckSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=31435905 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -86.0
+offset_top = 117.0
+offset_right = -26.0
+offset_bottom = 177.0
+grow_horizontal = 0
+
+[node name="ArtifactSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=81459463 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -86.0
+offset_top = 192.0
+offset_right = -26.0
+offset_bottom = 252.0
+grow_horizontal = 0
+
+[node name="LegsSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=1823445368 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -79.0
+offset_top = 272.0
+offset_right = -19.0
+offset_bottom = 332.0
+grow_horizontal = 2
+
+[node name="FeetSlot" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=1152007143 instance=ExtResource("5_equipment_slot_shell")]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 21.0
+offset_top = 272.0
+offset_right = 81.0
+offset_bottom = 332.0
+grow_horizontal = 2
+
+[node name="PlayerNameLabel" type="Label" parent="Root/Panel/Content/Left/EquipmentPanel" unique_id=1594799456]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 228.0
+offset_right = 80.0
+offset_bottom = 251.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 16
+text = "冒险者"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StatsPanel" type="Control" parent="Root/Panel/Content/Left" unique_id=374812966]
+custom_minimum_size = Vector2(330, 240)
+layout_mode = 2
+
+[node name="StatsPanelBackground" type="PanelContainer" parent="Root/Panel/Content/Left/StatsPanel" unique_id=1957001002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_stats_panel")
+
+[node name="StatsGrid" type="GridContainer" parent="Root/Panel/Content/Left/StatsPanel" unique_id=144975320]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="Right" type="VBoxContainer" parent="Root/Panel/Content" unique_id=202014301]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Top" type="HBoxContainer" parent="Root/Panel/Content/Right" unique_id=550520525]
+layout_mode = 2
+
+[node name="InventoryTabs" type="HBoxContainer" parent="Root/Panel/Content/Right/Top" unique_id=228100970]
+custom_minimum_size = Vector2(350, 50)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="EquipmentTab" type="Button" parent="Root/Panel/Content/Right/Top/InventoryTabs" unique_id=110435210]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("2_ang1s")
+theme_override_styles/pressed = ExtResource("3_hc366")
+theme_override_styles/hover = ExtResource("2_ang1s")
+theme_override_styles/hover_pressed = ExtResource("3_hc366")
+theme_override_styles/focus = ExtResource("3_hc366")
+toggle_mode = true
+keep_pressed_outside = true
+text = "装备"
+
+[node name="ConsumableTab" type="Button" parent="Root/Panel/Content/Right/Top/InventoryTabs" unique_id=212830313]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("2_ang1s")
+theme_override_styles/pressed = ExtResource("3_hc366")
+theme_override_styles/hover = ExtResource("2_ang1s")
+theme_override_styles/hover_pressed = ExtResource("3_hc366")
+theme_override_styles/focus = ExtResource("3_hc366")
+toggle_mode = true
+keep_pressed_outside = true
+text = "消耗品"
+
+[node name="MaterialTab" type="Button" parent="Root/Panel/Content/Right/Top/InventoryTabs" unique_id=343512191]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = ExtResource("2_ang1s")
+theme_override_styles/pressed = ExtResource("3_hc366")
+theme_override_styles/hover = ExtResource("2_ang1s")
+theme_override_styles/hover_pressed = ExtResource("3_hc366")
+theme_override_styles/focus = ExtResource("3_hc366")
+toggle_mode = true
+keep_pressed_outside = true
+text = "材料"
+
+[node name="Header" type="HBoxContainer" parent="Root/Panel/Content/Right/Top" unique_id=1000423076]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_constants/separation = 20
+
+[node name="CapacityLabel" type="Label" parent="Root/Panel/Content/Right/Top/Header" unique_id=1188611892]
+clip_contents = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "容量：40/100"
+
+[node name="CloseButton" type="Button" parent="Root/Panel/Content/Right/Top/Header" unique_id=960902760]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_styles/normal = ExtResource("4_hc366")
+theme_override_styles/pressed = ExtResource("4_hc366")
+theme_override_styles/hover = ExtResource("4_hc366")
+theme_override_styles/hover_pressed = ExtResource("4_hc366")
+theme_override_styles/focus = ExtResource("4_hc366")
+
+[node name="RightContent" type="VBoxContainer" parent="Root/Panel/Content/Right" unique_id=202014302]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="FilterDropdown" type="OptionButton" parent="Root/Panel/Content/Right/RightContent" unique_id=1507984584]
+custom_minimum_size = Vector2(80, 38)
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="InventoryVBox" type="VBoxContainer" parent="Root/Panel/Content/Right/RightContent" unique_id=1513735897]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="InventoryScroll" type="ScrollContainer" parent="Root/Panel/Content/Right/RightContent/InventoryVBox" unique_id=998431114]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxTexture_2y21e")
+
+[node name="InventoryGrid" type="GridContainer" parent="Root/Panel/Content/Right/RightContent/InventoryVBox/InventoryScroll" unique_id=1462988534]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 8
+
+[node name="ItemDetailsPanel" parent="." instance=ExtResource("6_item_details_panel")]

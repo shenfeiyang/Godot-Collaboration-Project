@@ -1,13 +1,10 @@
-[gd_resource type="Resource" script_class="UnitStatsConfig" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UnitStatsConfig" format=3 uid="uid://ct2qlrmq78djm"]
 
-[ext_resource type="Script" path="res://scripts/stats/unit_stats_config.gd" id="1_unit_stats_config"]
+[ext_resource type="Script" uid="uid://dbgkf0113n5h6" path="res://scripts/stats/unit_stats_config.gd" id="1_unit_stats_config"]
 
 [resource]
 script = ExtResource("1_unit_stats_config")
 max_hp = 40.0
 attack = 8.0
 defense = 1.0
-max_energy = 0.0
-energy_regen = 0.0
 move_speed = 70.0
-attack_speed = 1.0

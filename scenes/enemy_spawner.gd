@@ -43,6 +43,18 @@ func _ready() -> void:
 	if spawn_on_ready:
 		spawn_initial_enemies()
 
+func apply_stage_spawn_config(config: StageSpawnConfig) -> void:
+	if config == null:
+		push_warning("EnemySpawner received null StageSpawnConfig")
+		return
+	spawn_on_ready = config.spawn_on_ready
+	continuous_spawn = config.continuous_spawn
+	spawn_interval = config.spawn_interval
+	max_alive_enemies = config.max_alive_enemies
+	enemy_configs = config.enemy_configs.duplicate()
+	initial_spawn_positions = config.initial_spawn_positions.duplicate()
+	_rebuild_spawn_queue()
+
 func _process(delta: float) -> void:
 	if not continuous_spawn:
 		return
