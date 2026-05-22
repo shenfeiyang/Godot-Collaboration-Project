@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentDefinition" format=3]
+
+[ext_resource type="Script" path="res://assets/equipment/equipment_definition.gd" id="1_equipment_definition"]
+[ext_resource type="Script" path="res://scripts/stats/stat_modifier_config.gd" id="2_stat_modifier_config"]
+
+[sub_resource type="Resource" id="StatModifier_1"]
+script = ExtResource("2_stat_modifier_config")
+stat_id = &"max_hp"
+operation = 0
+value = 25.0
+
+[resource]
+script = ExtResource("1_equipment_definition")
+equipment_id = &"eq_1_6_1_1"
+display_name = "鞋子_01"
+icon = null
+rarity = 1
+slot_type = &"shoes"
+granted_skills = Array[Resource]([])
+stat_modifiers = Array[Resource]([SubResource("StatModifier_1")])

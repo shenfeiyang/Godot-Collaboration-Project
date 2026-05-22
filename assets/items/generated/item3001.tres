@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="InventoryItemDefinition" format=3]
+
+[ext_resource type="Script" path="res://ui/inventory_item_definition.gd" id="1_inventory_item_definition"]
+[ext_resource type="Script" path="res://scripts/stats/stat_modifier_config.gd" id="2_stat_modifier_config"]
+[ext_resource type="Texture2D" path="res://assets/texture/all_icon.png" id="3_icon_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
+atlas = ExtResource("3_icon_atlas")
+region = Rect2(128, 2992, 16, 16)
+
+[resource]
+script = ExtResource("1_inventory_item_definition")
+item_id = &"item3001"
+display_name = "普通宝箱"
+icon = SubResource("AtlasTexture_icon")
+category = 0
+subcategory = 16
+rarity = 3
+description = "用于挑战、扫荡关卡，获得奖励。"
+max_stack = 99
+equip_slot = 0
+stat_modifiers = Array[Resource]([])

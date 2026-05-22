@@ -1,0 +1,166 @@
+[gd_scene format=3 uid="uid://b0wx4twme1ep5"]
+
+[ext_resource type="Script" path="res://ui/battle_hud/battle_choice_panel.gd" id="1_battle_choice_panel"]
+[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/tilemap.png" id="2_tilemap"]
+[ext_resource type="StyleBox" uid="uid://rv261kh3w0up" path="res://ui/common_style/close_btn.tres" id="3_close_btn"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_panel_bg"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(221, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+texture = SubResource("AtlasTexture_panel_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_section_bg"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(187, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_section"]
+texture = SubResource("AtlasTexture_section_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="BattleChoicePanel" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_battle_choice_panel")
+
+[node name="Overlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.45)
+
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(960, 640)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -320.0
+offset_right = 480.0
+offset_bottom = 320.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="Content" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleBlock" type="VBoxContainer" parent="Panel/Margin/Content/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 26
+text = "三选一"
+
+[node name="SubtitleLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "请选择一个选项。"
+
+[node name="CloseButton" type="Button" parent="Panel/Margin/Content/Header"]
+custom_minimum_size = Vector2(50, 40)
+layout_mode = 2
+theme_override_styles/normal = ExtResource("3_close_btn")
+theme_override_styles/pressed = ExtResource("3_close_btn")
+theme_override_styles/hover = ExtResource("3_close_btn")
+theme_override_styles/hover_pressed = ExtResource("3_close_btn")
+theme_override_styles/focus = ExtResource("3_close_btn")
+text = ""
+
+[node name="EventPanel" type="PanelContainer" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_section")
+
+[node name="EventMargin" type="MarginContainer" parent="Panel/Margin/Content/EventPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="EventLabel" type="Label" parent="Panel/Margin/Content/EventPanel/EventMargin"]
+layout_mode = 2
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "事件说明"
+
+[node name="ChoicesPanel" type="PanelContainer" parent="Panel/Margin/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxTexture_section")
+
+[node name="ChoicesMargin" type="MarginContainer" parent="Panel/Margin/Content/ChoicesPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="ChoicesRow" type="HBoxContainer" parent="Panel/Margin/Content/ChoicesPanel/ChoicesMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="FooterPanel" type="PanelContainer" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_section")
+
+[node name="FooterMargin" type="MarginContainer" parent="Panel/Margin/Content/FooterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="FooterLabel" type="Label" parent="Panel/Margin/Content/FooterPanel/FooterMargin"]
+layout_mode = 2
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "点击任意卡片继续。"

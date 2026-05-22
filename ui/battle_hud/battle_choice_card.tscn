@@ -1,0 +1,159 @@
+[gd_scene format=3 uid="uid://caw4yakaq3f2x"]
+
+[ext_resource type="Script" path="res://ui/battle_hud/battle_choice_card.gd" id="1_battle_choice_card"]
+[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/tilemap.png" id="2_tilemap"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_card_bg"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(221, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_card_bg"]
+texture = SubResource("AtlasTexture_card_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_card_frame"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(170, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_card_frame"]
+texture = SubResource("AtlasTexture_card_frame")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glow_frame"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 0.9, 0.55, 0.92)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(1, 0.86, 0.42, 0.4)
+shadow_size = 6
+
+[node name="BattleChoiceCard" type="Button"]
+custom_minimum_size = Vector2(220, 300)
+layout_mode = 2
+toggle_mode = false
+text = ""
+flat = true
+script = ExtResource("1_battle_choice_card")
+
+theme_override_styles/normal = SubResource("StyleBoxTexture_card_bg")
+theme_override_styles/hover = SubResource("StyleBoxTexture_card_bg")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_card_bg")
+theme_override_styles/focus = SubResource("StyleBoxTexture_card_bg")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_card_bg")
+
+[node name="GlowFrame" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_glow_frame")
+
+[node name="CardBackdrop" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_card_frame")
+
+[node name="SelectionFrame" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.84, 0.2, 0.3)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="TagLabel" type="Label" parent="Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73, 0.52, 0.24, 1)
+theme_override_font_sizes/font_size = 13
+text = "特殊事件"
+horizontal_alignment = 1
+
+[node name="IconPanel" type="PanelContainer" parent="Margin/Content"]
+custom_minimum_size = Vector2(0, 104)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_card_frame")
+
+[node name="IconCenter" type="CenterContainer" parent="Margin/Content/IconPanel"]
+layout_mode = 2
+
+[node name="IconTexture" type="TextureRect" parent="Margin/Content/IconPanel/IconCenter"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.46, 0.27, 0.09, 1)
+theme_override_font_sizes/font_size = 16
+text = "候选项标题"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DescriptionLabel" type="Label" parent="Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+vertical_alignment = 0
+theme_override_colors/font_color = Color(0.33, 0.22, 0.09, 1)
+theme_override_font_sizes/font_size = 13
+text = "候选项说明"
+autowrap_mode = 2

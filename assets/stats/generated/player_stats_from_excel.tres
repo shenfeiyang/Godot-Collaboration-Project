@@ -1,19 +1,19 @@
-[gd_resource type="Resource" script_class="UnitStatsConfig" format=3 uid="uid://vpyy450wgcm3"]
+[gd_resource type="Resource" script_class="UnitStatsConfig" format=3]
 
-[ext_resource type="Script" uid="uid://dbgkf0113n5h6" path="res://scripts/stats/unit_stats_config.gd" id="1_unit_stats_config"]
+[ext_resource type="Script" path="res://scripts/stats/unit_stats_config.gd" id="1_unit_stats_config"]
 
 [resource]
 script = ExtResource("1_unit_stats_config")
-max_hp = 2000.0
 attack = 50.0
-crit_rate = 0.05
+defense = 50.0
+crit_rate = 0.1
 crit_damage = 0.5
 max_energy = 100.0
 energy_regen = 10.0
-attack_speed = 2.0
+move_speed = 120.0
 physical_damage_bonus = 0.0
 wind_damage_bonus = 0.0
-fire_damage_bonus = 0.15
+fire_damage_bonus = 0.1
 ice_damage_bonus = 0.0
 lightning_damage_bonus = 0.0
 light_damage_bonus = 0.0

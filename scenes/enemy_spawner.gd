@@ -93,6 +93,9 @@ func _spawn_enemy(config: EnemySpawnConfig) -> void:
 		return
 
 	var enemy := enemy_instance as Enemy
+	var stats_component := enemy.get_node_or_null("StatsComponent") as StatsComponent
+	if stats_component != null and config.base_stats_config != null:
+		stats_component.base_stats_config = config.base_stats_config
 	_enemy_container.add_child(enemy)
 	enemy.global_position = _get_next_spawn_position()
 	enemy.set_target(_player)

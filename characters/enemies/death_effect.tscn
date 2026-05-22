@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://gibqwug8ebav"]
 
 [ext_resource type="Texture2D" uid="uid://c3p67kh3gl8kf" path="res://assets/texture/爆炸特效.png" id="1_muoay"]
-[ext_resource type="Script" uid="uid://cioe7nohqatn8" path="res://characters/enemies/death_effect.gd" id="2_death_effect_script"]
+[ext_resource type="Script" path="res://characters/enemies/death_effect.gd" id="2_death_effect_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_o13lx"]
 atlas = ExtResource("1_muoay")

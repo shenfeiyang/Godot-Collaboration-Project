@@ -12,6 +12,7 @@ const ITEM_ICON_ATLAS = preload("res://assets/texture/all_icon.png")
 const STAT_MODIFIER_CONFIG_SCRIPT = preload("res://scripts/stats/stat_modifier_config.gd")
 const EQUIPMENT_DEFINITION_SCRIPT = preload("res://assets/equipment/equipment_definition.gd")
 const GENERATED_EQUIPMENT_DIR = "res://assets/equipment/generated"
+const GENERATED_ITEM_DIR = "res://assets/items/generated"
 const EQUIPMENT_SLOT_LAYOUTS = [
 	{"holder_path": "WeaponSlot/SlotHolder", "equip_slot": SHARED_ENUMS.EquipSlot.WEAPON, "label": "武器"},
 	{"holder_path": "HeadSlot/SlotHolder", "equip_slot": SHARED_ENUMS.EquipSlot.HEAD, "label": "头部"},
@@ -307,107 +308,9 @@ func _refresh_slot_selection_state() -> void:
 
 func _build_demo_inventory_slots() -> Array[InventorySlotData]:
 	var slots: Array[InventorySlotData] = []
-	var demo_items: Array[Dictionary] = _build_generated_equipment_demo_items()
-	demo_items.append_array([
-		{
-			"definition": _create_item_definition(
-				&"bread",
-				"干粮面包",
-				SHARED_ENUMS.ItemCategory.CONSUMABLE,
-				SHARED_ENUMS.ItemSubcategory.FOOD,
-				SHARED_ENUMS.ItemRarity.WHITE,
-				"恢复体力用的旅行干粮。",
-				20,
-				SHARED_ENUMS.EquipSlot.NONE,
-				[]
-			),
-			"quantity": 6,
-		},
-		{
-			"definition": _create_item_definition(
-				&"mana_leaf",
-				"回能叶片",
-				SHARED_ENUMS.ItemCategory.CONSUMABLE,
-				SHARED_ENUMS.ItemSubcategory.POTION,
-				SHARED_ENUMS.ItemRarity.BLUE,
-				"可用于快速补充战斗中的能量。",
-				10,
-				SHARED_ENUMS.EquipSlot.NONE,
-				[]
-			),
-			"quantity": 3,
-		},
-		{
-			"definition": _create_item_definition(
-				&"iron_ore",
-				"铁矿石",
-				SHARED_ENUMS.ItemCategory.MATERIAL,
-				SHARED_ENUMS.ItemSubcategory.ORE,
-				SHARED_ENUMS.ItemRarity.WHITE,
-				"常见的锻造矿石，可用于制作基础装备。",
-				99,
-				SHARED_ENUMS.EquipSlot.NONE,
-				[]
-			),
-			"quantity": 18,
-		},
-		{
-			"definition": _create_item_definition(
-				&"moonleaf",
-				"月纹草",
-				SHARED_ENUMS.ItemCategory.MATERIAL,
-				SHARED_ENUMS.ItemSubcategory.HERB,
-				SHARED_ENUMS.ItemRarity.GREEN,
-				"带有微光的草药，是常见炼金材料。",
-				99,
-				SHARED_ENUMS.EquipSlot.NONE,
-				[]
-			),
-			"quantity": 9,
-		},
-		{
-			"definition": _create_item_definition(
-				&"beast_bone",
-				"兽骨碎片",
-				SHARED_ENUMS.ItemCategory.MATERIAL,
-				SHARED_ENUMS.ItemSubcategory.BONE,
-				SHARED_ENUMS.ItemRarity.BLUE,
-				"坚硬的野兽骨材，可用于强化护具。",
-				99,
-				SHARED_ENUMS.EquipSlot.NONE,
-				[]
-			),
-			"quantity": 7,
-		},
-		{
-			"definition": _create_item_definition(
-				&"sun_gem",
-				"日耀宝石",
-				SHARED_ENUMS.ItemCategory.MATERIAL,
-				SHARED_ENUMS.ItemSubcategory.GEM,
-				SHARED_ENUMS.ItemRarity.PURPLE,
-				"内含稳定能量的宝石，可用于高阶镶嵌。",
-				99,
-				SHARED_ENUMS.EquipSlot.NONE,
-				[]
-			),
-			"quantity": 4,
-		},
-		{
-			"definition": _create_item_definition(
-				&"crystal_core",
-				"结晶核心",
-				SHARED_ENUMS.ItemCategory.MATERIAL,
-				SHARED_ENUMS.ItemSubcategory.OTHER,
-				SHARED_ENUMS.ItemRarity.PURPLE,
-				"用于强化武器或解锁高阶技能的稀有素材。",
-				99,
-				SHARED_ENUMS.EquipSlot.NONE,
-				[]
-			),
-			"quantity": 12,
-		},
-	])
+	var demo_items: Array[Dictionary] = []
+	demo_items.append_array(_build_generated_equipment_demo_items())
+	demo_items.append_array(_build_generated_item_demo_items())
 	for index in range(inventory_slot_count):
 		var slot_data: InventorySlotData = INVENTORY_SLOT_DATA_SCRIPT.new()
 		if index < demo_items.size():
@@ -447,7 +350,7 @@ func _create_item_definition_from_equipment(equipment_definition: EquipmentDefin
 		SHARED_ENUMS.ItemCategory.EQUIPMENT,
 		subcategory,
 		rarity,
-		"由装备表生成的测试装备。",
+		"由装备表生成的正式装备。",
 		1,
 		equip_slot,
 		[]
@@ -485,12 +388,44 @@ func _load_generated_equipment_definitions() -> Array[EquipmentDefinition]:
 	)
 	return definitions
 
+func _load_generated_item_definitions() -> Array[InventoryItemDefinition]:
+	var definitions: Array[InventoryItemDefinition] = []
+	var dir := DirAccess.open(GENERATED_ITEM_DIR)
+	if dir == null:
+		return definitions
+	dir.list_dir_begin()
+	while true:
+		var file_name := dir.get_next()
+		if file_name.is_empty():
+			break
+		if dir.current_is_dir() or not file_name.ends_with(".tres"):
+			continue
+		var resource := load("%s/%s" % [GENERATED_ITEM_DIR, file_name]) as InventoryItemDefinition
+		if resource != null:
+			definitions.append(resource)
+	dir.list_dir_end()
+	definitions.sort_custom(func(a: InventoryItemDefinition, b: InventoryItemDefinition) -> bool:
+		return String(a.item_id) < String(b.item_id)
+	)
+	return definitions
+
 func _build_generated_equipment_demo_items() -> Array[Dictionary]:
 	var demo_items: Array[Dictionary] = []
 	for equipment_definition in _load_generated_equipment_definitions():
 		demo_items.append({
 			"definition": _create_item_definition_from_equipment(equipment_definition),
 			"quantity": 1,
+		})
+	return demo_items
+
+func _build_generated_item_demo_items() -> Array[Dictionary]:
+	var demo_items: Array[Dictionary] = []
+	for item_definition in _load_generated_item_definitions():
+		if item_definition == null:
+			continue
+		demo_items.append({
+			"definition": item_definition,
+			"quantity": max(item_definition.max_stack if item_definition.max_stack > 1 else 1, 1),
 		})
 	return demo_items
 
@@ -594,6 +529,7 @@ func _on_equipment_slot_right_clicked(slot_index: int) -> void:
 
 func _refresh_player_summary() -> void:
 	player_name_label.text = "冒险者"
+	_apply_equipped_modifiers_to_stats_component()
 	_rebuild_stats_grid()
 
 func _rebuild_stats_grid() -> void:
@@ -611,10 +547,16 @@ func _rebuild_stats_grid() -> void:
 		stats_grid.add_child(stat_label)
 
 func _build_visible_stat_ids() -> Array[StringName]:
-	var visible_stat_ids: Array[StringName] = []
+	var visible_stat_ids: Array[StringName] = [
+		STAT_IDS.MAX_HP,
+		STAT_IDS.ATTACK,
+		STAT_IDS.DEFENSE,
+	]
 	if _stats_component == null or _stats_component.base_stats_config == null:
 		return visible_stat_ids
 	for stat_id in _stats_component.base_stats_config.get_configured_base_stat_ids():
+		if visible_stat_ids.has(stat_id):
+			continue
 		visible_stat_ids.append(stat_id)
 	return visible_stat_ids
 
@@ -699,10 +641,12 @@ func _equip_inventory_item(inventory_index: int) -> void:
 	_selected_visible_slot_index = _visible_slot_indexes.find(inventory_index)
 	_selected_equipment_slot = SHARED_ENUMS.EquipSlot.NONE
 	_selected_item_definition = slot_data.item_definition
+	_apply_equipped_modifiers_to_stats_component()
 	_refresh_equipment_preview()
 	_refresh_inventory_view()
 	_refresh_slot_selection_state()
 	_refresh_selection_info(_selected_item_definition)
+	_rebuild_stats_grid()
 
 func _unequip_slot(equip_slot: int) -> void:
 	var normalized_slot := _normalize_equip_slot(equip_slot)
@@ -711,10 +655,12 @@ func _unequip_slot(equip_slot: int) -> void:
 	_selected_equipment_slot = normalized_slot
 	_selected_visible_slot_index = -1
 	_selected_item_definition = _get_equipped_item_for_slot(normalized_slot)
+	_apply_equipped_modifiers_to_stats_component()
 	_refresh_equipment_preview()
 	_refresh_inventory_view()
 	_refresh_slot_selection_state()
 	_refresh_selection_info(_selected_item_definition)
+	_rebuild_stats_grid()
 
 func _request_equip_from_inventory(inventory_index: int, equip_slot: int) -> void:
 	if not _can_equip_inventory_item(inventory_index):
@@ -747,6 +693,27 @@ func _request_unequip_to_inventory(equip_slot: int, target_inventory_index: int 
 	_selected_visible_slot_index = _visible_slot_indexes.find(equipped_inventory_index)
 	_refresh_inventory_view()
 	_refresh_slot_selection_state()
+
+func _build_equipped_stat_modifiers() -> Array[StatModifierConfig]:
+	var modifiers: Array[StatModifierConfig] = []
+	for equip_slot in _equipment_slot_uis.keys():
+		var item_definition := _get_equipped_item_for_slot(int(equip_slot))
+		if item_definition == null:
+			continue
+		for modifier in item_definition.stat_modifiers:
+			if modifier == null:
+				continue
+			var copied_modifier: StatModifierConfig = STAT_MODIFIER_CONFIG_SCRIPT.new()
+			copied_modifier.stat_id = modifier.stat_id
+			copied_modifier.operation = modifier.operation
+			copied_modifier.value = modifier.value
+			modifiers.append(copied_modifier)
+	return modifiers
+
+func _apply_equipped_modifiers_to_stats_component() -> void:
+	if _stats_component == null:
+		return
+	_stats_component.set_external_modifiers(_build_equipped_stat_modifiers())
 
 func _refresh_selection_info(item_definition: InventoryItemDefinition) -> void:
 	_selected_item_definition = item_definition

@@ -5,6 +5,9 @@
 [ext_resource type="Script" uid="uid://clpgrtfrx41fr" path="res://ui/battle_hud/virtual_joystick.gd" id="3_virtual_joystick"]
 [ext_resource type="PackedScene" uid="uid://cwjtg7koosn3e" path="res://ui/inventory_panel.tscn" id="4_inventory_panel"]
 [ext_resource type="Texture2D" uid="uid://4svsp8dqk2wl" path="res://assets/texture/icon.png" id="5_player_icon"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/battle_choice_panel.tscn" id="6_battle_choice_panel"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/settlement_shop_panel.tscn" id="7_settlement_shop_panel"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/battle_settlement_panel.tscn" id="8_battle_settlement_panel"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_portrait_panel"]
 bg_color = Color(0.18, 0.22, 0.32, 0.92)
@@ -70,8 +73,8 @@ grow_vertical = 2
 layout_mode = 1
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 252.0
-offset_bottom = 210.0
+offset_right = 292.0
+offset_bottom = 264.0
 
 [node name="TopLeftVBox" type="VBoxContainer" parent="Root/TopLeft" unique_id=1178244409]
 layout_mode = 2
@@ -138,19 +141,37 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_7coma")
 value = 100.0
 show_percentage = false
 
-[node name="QuickButtons" type="HBoxContainer" parent="Root/TopLeft/TopLeftVBox" unique_id=1637486164]
+[node name="QuickButtons" type="VBoxContainer" parent="Root/TopLeft/TopLeftVBox" unique_id=1637486164]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="QuickButtonsRow1" type="HBoxContainer" parent="Root/TopLeft/TopLeftVBox/QuickButtons"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="BagButton" type="Button" parent="Root/TopLeft/TopLeftVBox/QuickButtons" unique_id=1051667948]
-custom_minimum_size = Vector2(84, 34)
+[node name="BagButton" type="Button" parent="Root/TopLeft/TopLeftVBox/QuickButtons/QuickButtonsRow1" unique_id=1051667948]
+custom_minimum_size = Vector2(112, 34)
 layout_mode = 2
 text = "背包"
 
-[node name="SkillButton" type="Button" parent="Root/TopLeft/TopLeftVBox/QuickButtons" unique_id=882097062]
-custom_minimum_size = Vector2(84, 34)
+[node name="SkillButton" type="Button" parent="Root/TopLeft/TopLeftVBox/QuickButtons/QuickButtonsRow1" unique_id=882097062]
+custom_minimum_size = Vector2(112, 34)
 layout_mode = 2
 text = "技能"
+
+[node name="QuickButtonsRow2" type="HBoxContainer" parent="Root/TopLeft/TopLeftVBox/QuickButtons"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ChoiceDemoButton" type="Button" parent="Root/TopLeft/TopLeftVBox/QuickButtons/QuickButtonsRow2"]
+custom_minimum_size = Vector2(112, 34)
+layout_mode = 2
+text = "三选一演示"
+
+[node name="SettlementShopDemoButton" type="Button" parent="Root/TopLeft/TopLeftVBox/QuickButtons/QuickButtonsRow2"]
+custom_minimum_size = Vector2(112, 34)
+layout_mode = 2
+text = "商店演示"
 
 [node name="BottomLeft" type="MarginContainer" parent="Root" unique_id=1827627159]
 layout_mode = 1
@@ -271,4 +292,13 @@ slot_index = 4
 slot_label = "技能4"
 
 [node name="InventoryPanel" parent="Root" unique_id=736188318 instance=ExtResource("4_inventory_panel")]
+layout_mode = 1
+
+[node name="BattleChoicePanel" parent="Root" instance=ExtResource("6_battle_choice_panel")]
+layout_mode = 1
+
+[node name="SettlementShopPanel" parent="Root" instance=ExtResource("7_settlement_shop_panel")]
+layout_mode = 1
+
+[node name="BattleSettlementPanel" parent="Root" instance=ExtResource("8_battle_settlement_panel")]
 layout_mode = 1

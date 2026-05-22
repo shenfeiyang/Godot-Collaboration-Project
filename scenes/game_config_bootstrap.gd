@@ -7,6 +7,7 @@ const DEFAULT_PLAYER_SKILLS: Array[SkillDefinition] = [
 	preload("res://abilities/skills/data/skill3_definition.tres"),
 	preload("res://abilities/skills/data/skill4_definition.tres"),
 ]
+const STAT_MODIFIER_CONFIG_SCRIPT = preload("res://scripts/stats/stat_modifier_config.gd")
 
 @export var game_run_config: GameRunConfig
 @export var player_path: NodePath = NodePath("../Entities/Player")
@@ -31,11 +32,28 @@ func _enter_tree() -> void:
 
 func _apply_player_config(player: Player) -> void:
 	var stats_component: StatsComponent = player.get_node_or_null("StatsComponent") as StatsComponent
-	if game_run_config.player_base_stats != null and stats_component != null:
-		stats_component.base_stats_config = game_run_config.player_base_stats
+	if stats_component != null:
+		if game_run_config.player_base_stats != null:
+			stats_component.base_stats_config = game_run_config.player_base_stats
+		stats_component.set_external_modifiers(_build_equipment_modifiers())
 	var resolved_skills: Array[SkillDefinition] = _build_player_skills()
 	if not resolved_skills.is_empty():
 		player.apply_configured_skill_definitions(resolved_skills)
+
+func _build_equipment_modifiers() -> Array[StatModifierConfig]:
+	var modifiers: Array[StatModifierConfig] = []
+	for equipment in game_run_config.equipped_items:
+		if equipment == null:
+			continue
+		for modifier in equipment.stat_modifiers:
+			if modifier == null:
+				continue
+			var copied_modifier: StatModifierConfig = STAT_MODIFIER_CONFIG_SCRIPT.new()
+			copied_modifier.stat_id = modifier.stat_id
+			copied_modifier.operation = modifier.operation
+			copied_modifier.value = modifier.value
+			modifiers.append(copied_modifier)
+	return modifiers
 
 func _build_player_skills() -> Array[SkillDefinition]:
 	var resolved_skills: Array[SkillDefinition] = []

@@ -1,0 +1,126 @@
+[gd_scene format=3 uid="uid://chdnsir20ur0"]
+
+[ext_resource type="Script" path="res://ui/battle_hud/settlement_shop_item.gd" id="1_settlement_shop_item"]
+[ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/tilemap.png" id="2_tilemap"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_item_bg"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(221, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_item_bg"]
+texture = SubResource("AtlasTexture_item_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glow_frame"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.88, 0.54, 0.95)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(1, 0.84, 0.42, 0.28)
+shadow_size = 4
+
+[node name="SettlementShopItem" type="Button"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+flat = true
+script = ExtResource("1_settlement_shop_item")
+
+theme_override_styles/normal = SubResource("StyleBoxTexture_item_bg")
+theme_override_styles/hover = SubResource("StyleBoxTexture_item_bg")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_item_bg")
+theme_override_styles/focus = SubResource("StyleBoxTexture_item_bg")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_item_bg")
+
+[node name="SelectionFrame" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.83, 0.2, 0.16)
+
+[node name="GlowFrame" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_glow_frame")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="TopRow" type="HBoxContainer" parent="Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Margin/Content/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.47, 0.28, 0.09, 1)
+theme_override_font_sizes/font_size = 16
+text = "商品名称"
+
+[node name="PriceLabel" type="Label" parent="Margin/Content/TopRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.48, 1)
+theme_override_font_sizes/font_size = 15
+text = "60 金币"
+horizontal_alignment = 2
+
+[node name="DescriptionLabel" type="Label" parent="Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.22, 0.09, 1)
+theme_override_font_sizes/font_size = 13
+text = "商品说明"
+
+[node name="StateLabel" type="Label" parent="Margin/Content"]
+layout_mode = 2
+autowrap_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 13
+text = "可购买"

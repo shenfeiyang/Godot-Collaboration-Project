@@ -1,25 +1,28 @@
-[gd_resource type="Resource" script_class="EquipmentDefinition" format=3]
+[gd_resource type="Resource" script_class="InventoryItemDefinition" format=3]
 
-[ext_resource type="Script" path="res://assets/equipment/equipment_definition.gd" id="1_equipment_definition"]
+[ext_resource type="Script" path="res://ui/inventory_item_definition.gd" id="1_inventory_item_definition"]
 [ext_resource type="Script" path="res://scripts/stats/stat_modifier_config.gd" id="2_stat_modifier_config"]
 [ext_resource type="Texture2D" path="res://assets/texture/all_icon.png" id="3_icon_atlas"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
 atlas = ExtResource("3_icon_atlas")
-region = Rect2(112, 0, 16, 16)
+region = Rect2(0, 4000, 16, 16)
 
 [sub_resource type="Resource" id="StatModifier_1"]
 script = ExtResource("2_stat_modifier_config")
 stat_id = &"max_hp"
 operation = 0
-value = 26.0
+value = 500.0
 
 [resource]
-script = ExtResource("1_equipment_definition")
-equipment_id = &"eq_mage_neck_01"
-display_name = "辉石项链"
+script = ExtResource("1_inventory_item_definition")
+item_id = &"item4001"
+display_name = "生命药水"
 icon = SubResource("AtlasTexture_icon")
+category = 0
+subcategory = 11
 rarity = 3
-slot_type = &"necklace"
-granted_skills = Array[Resource]([])
+description = "恢复500点生命值"
+max_stack = 99
+equip_slot = 0
 stat_modifiers = Array[Resource]([SubResource("StatModifier_1")])

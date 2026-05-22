@@ -1,0 +1,85 @@
+[gd_resource type="Resource" script_class="StageSpawnConfig" format=3]
+
+[ext_resource type="Script" path="res://scenes/config/stage_spawn_config.gd" id="1_stage_spawn_config"]
+[ext_resource type="Script" path="res://characters/enemies/enemy_spawn_config.gd" id="2_enemy_spawn_config"]
+[ext_resource type="PackedScene" path="res://characters/enemies/enemy_yellow.tscn" id="3_enemy_scene"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monxg_01.tres" id="4_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monxg_02.tres" id="5_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monxg_03.tres" id="6_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monxg_04.tres" id="7_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monxg_05.tres" id="8_enemy_stats"]
+[ext_resource type="PackedScene" path="res://characters/enemies/enemy_red.tscn" id="9_enemy_scene"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monjy_01.tres" id="10_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monjy_02.tres" id="11_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monjy_03.tres" id="12_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monbs_01.tres" id="13_enemy_stats"]
+[ext_resource type="Resource" path="res://assets/monsters/generated/stats/monbs_02.tres" id="14_enemy_stats"]
+
+[sub_resource type="Resource" id="1_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("3_enemy_scene")
+base_stats_config = ExtResource("4_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="2_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("3_enemy_scene")
+base_stats_config = ExtResource("5_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="3_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("3_enemy_scene")
+base_stats_config = ExtResource("6_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="4_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("3_enemy_scene")
+base_stats_config = ExtResource("7_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="5_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("3_enemy_scene")
+base_stats_config = ExtResource("8_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="6_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("9_enemy_scene")
+base_stats_config = ExtResource("10_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="7_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("9_enemy_scene")
+base_stats_config = ExtResource("11_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="8_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("9_enemy_scene")
+base_stats_config = ExtResource("12_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="9_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("9_enemy_scene")
+base_stats_config = ExtResource("13_enemy_stats")
+spawn_count = 1
+
+[sub_resource type="Resource" id="10_enemy_wave"]
+script = ExtResource("2_enemy_spawn_config")
+enemy_scene = ExtResource("9_enemy_scene")
+base_stats_config = ExtResource("14_enemy_stats")
+spawn_count = 1
+
+[resource]
+script = ExtResource("1_stage_spawn_config")
+enemy_configs = Array[ExtResource("2_enemy_spawn_config")]([SubResource("1_enemy_wave"), SubResource("2_enemy_wave"), SubResource("3_enemy_wave"), SubResource("4_enemy_wave"), SubResource("5_enemy_wave"), SubResource("6_enemy_wave"), SubResource("7_enemy_wave"), SubResource("8_enemy_wave"), SubResource("9_enemy_wave"), SubResource("10_enemy_wave")])
+initial_spawn_positions = Array[Vector2]([Vector2(8, 296), Vector2(8, 312), Vector2(8, 328), Vector2(8, 344), Vector2(792, 440), Vector2(792, 456), Vector2(792, 472), Vector2(792, 488)])
+spawn_on_ready = true
+continuous_spawn = false
+spawn_interval = 1.5
+max_alive_enemies = 10

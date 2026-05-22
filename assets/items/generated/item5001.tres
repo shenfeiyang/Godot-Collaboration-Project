@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="InventoryItemDefinition" format=3]
+
+[ext_resource type="Script" path="res://ui/inventory_item_definition.gd" id="1_inventory_item_definition"]
+[ext_resource type="Script" path="res://scripts/stats/stat_modifier_config.gd" id="2_stat_modifier_config"]
+[ext_resource type="Texture2D" path="res://assets/texture/all_icon.png" id="3_icon_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
+atlas = ExtResource("3_icon_atlas")
+region = Rect2(128, 4992, 16, 16)
+
+[resource]
+script = ExtResource("1_inventory_item_definition")
+item_id = &"item5001"
+display_name = "粉色激光武器图纸"
+icon = SubResource("AtlasTexture_icon")
+category = 2
+subcategory = 16
+rarity = 5
+description = "制造XXX装备的图纸"
+max_stack = 9999
+equip_slot = 0
+stat_modifiers = Array[Resource]([])

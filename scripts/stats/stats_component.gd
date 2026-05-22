@@ -12,7 +12,11 @@ signal buff_added(buff_runtime: BuffRuntime)
 signal buff_removed(buff_runtime: BuffRuntime)
 
 # 单位基础面板资源。
-@export var base_stats_config: UnitStatsConfig
+@export var base_stats_config: UnitStatsConfig:
+	set(value):
+		_set_base_stats_config(value)
+	get:
+		return _base_stats_config
 # 进入场景时是否自动补满生命。
 @export var initialize_full_health: bool = true
 # 进入场景时是否自动补满能量。
@@ -21,9 +25,11 @@ signal buff_removed(buff_runtime: BuffRuntime)
 var current_hp: float = 0.0
 var current_energy: float = 0.0
 
+var _base_stats_config: UnitStatsConfig = null
 var _final_stats: Dictionary = {}
 var _stats_dirty: bool = true
 var _active_buffs: Array[BuffRuntime] = []
+var _external_modifiers: Array[StatModifierConfig] = []
 var _is_dead: bool = false
 
 func _ready() -> void:
@@ -61,6 +67,36 @@ func get_hp_ratio() -> float:
 
 func is_dead() -> bool:
 	return _is_dead
+
+func set_external_modifiers(modifiers: Array[StatModifierConfig]) -> void:
+	_external_modifiers = []
+	for modifier in modifiers:
+		if modifier == null:
+			continue
+		_external_modifiers.append(modifier)
+	_stats_dirty = true
+
+func _set_base_stats_config(value: UnitStatsConfig) -> void:
+	_base_stats_config = value
+	_stats_dirty = true
+	if not is_node_ready():
+		return
+	_rebuild_stats_if_needed()
+	var max_hp_value: float = get_stat(STAT_IDS.MAX_HP)
+	var max_energy_value: float = get_stat(STAT_IDS.MAX_ENERGY)
+	if initialize_full_health or current_hp <= 0.0:
+		current_hp = max_hp_value
+	else:
+		current_hp = clamp(current_hp, 0.0, max_hp_value)
+	if initialize_full_energy:
+		current_energy = max_energy_value
+	else:
+		current_energy = clamp(current_energy, 0.0, max_energy_value)
+	health_changed.emit(current_hp, current_hp, max_hp_value)
+	energy_changed.emit(current_energy, current_energy, max_energy_value)
+
+func get_external_modifiers() -> Array[StatModifierConfig]:
+	return _external_modifiers.duplicate()
 
 func apply_damage(damage_packet: Dictionary) -> Dictionary:
 	if _is_dead:
@@ -183,33 +219,37 @@ func _regenerate_energy(delta: float) -> void:
 	if not is_equal_approx(old_energy, current_energy):
 		energy_changed.emit(old_energy, current_energy, get_stat(STAT_IDS.MAX_ENERGY))
 
+func _accumulate_modifier(modifier: StatModifierConfig, stack_multiplier: float, flat_adds: Dictionary, percent_adds: Dictionary, percent_muls: Dictionary) -> void:
+	if modifier == null or modifier.stat_id == StringName():
+		return
+	match modifier.operation:
+		SHARED_ENUMS.ModifierOperation.FLAT_ADD:
+			flat_adds[modifier.stat_id] = float(flat_adds.get(modifier.stat_id, 0.0)) + modifier.value * stack_multiplier
+		SHARED_ENUMS.ModifierOperation.PERCENT_ADD:
+			percent_adds[modifier.stat_id] = float(percent_adds.get(modifier.stat_id, 0.0)) + modifier.value * stack_multiplier
+		SHARED_ENUMS.ModifierOperation.PERCENT_MUL:
+			var current_mul: float = float(percent_muls.get(modifier.stat_id, 1.0))
+			percent_muls[modifier.stat_id] = current_mul * pow(1.0 + modifier.value, stack_multiplier)
+
 func _rebuild_stats_if_needed() -> void:
 	if not _stats_dirty:
 		return
 
 	var base_stats: Dictionary = {}
-	if base_stats_config != null:
-		base_stats = base_stats_config.get_base_stats()
+	if _base_stats_config != null:
+		base_stats = _base_stats_config.get_base_stats()
 
 	var final_stats: Dictionary = base_stats.duplicate(true)
 	var flat_adds: Dictionary = {}
 	var percent_adds: Dictionary = {}
 	var percent_muls: Dictionary = {}
+	for modifier in _external_modifiers:
+		_accumulate_modifier(modifier, 1.0, flat_adds, percent_adds, percent_muls)
 	for runtime in _active_buffs:
 		if runtime == null:
 			continue
 		for modifier in runtime.get_modifiers():
-			if modifier == null or modifier.stat_id == StringName():
-				continue
-			var stack_multiplier: float = float(runtime.stacks)
-			match modifier.operation:
-				SHARED_ENUMS.ModifierOperation.FLAT_ADD:
-					flat_adds[modifier.stat_id] = float(flat_adds.get(modifier.stat_id, 0.0)) + modifier.value * stack_multiplier
-				SHARED_ENUMS.ModifierOperation.PERCENT_ADD:
-					percent_adds[modifier.stat_id] = float(percent_adds.get(modifier.stat_id, 0.0)) + modifier.value * stack_multiplier
-				SHARED_ENUMS.ModifierOperation.PERCENT_MUL:
-					var current_mul: float = float(percent_muls.get(modifier.stat_id, 1.0))
-					percent_muls[modifier.stat_id] = current_mul * pow(1.0 + modifier.value, stack_multiplier)
+			_accumulate_modifier(modifier, float(runtime.stacks), flat_adds, percent_adds, percent_muls)
 
 	var stat_ids: Dictionary = {}
 	for stat_id in base_stats.keys():

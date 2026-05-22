@@ -51,6 +51,8 @@ static var _debug_last_physics_usec: int = 0
 
 @onready var body_sprite: AnimatedSprite2D = _resolve_body_sprite()
 @onready var stats_component: StatsComponent = $StatsComponent
+@onready var health_bar_root: Node2D = get_node_or_null("HealthBarRoot") as Node2D
+@onready var health_bar_fill: Panel = get_node_or_null("HealthBarRoot/Fill") as Panel
 
 var target: Node2D = null
 var navigation_service: GridNavigationService = null
@@ -65,6 +67,7 @@ var _last_path_start_cell: Vector2i = GridNavigationService.INVALID_CELL
 var _path_reference_distance: float = INF
 var _path_stuck_time: float = 0.0
 var _attack_cooldown_remaining: float = 0.0
+var _health_bar_width: float = 0.0
 
 func set_target(new_target: Node2D) -> void:
 	target = new_target
@@ -78,8 +81,12 @@ func set_enemy_spatial_partition(new_enemy_spatial_partition: EnemySpatialPartit
 func _ready() -> void:
 	collision_layer = PHYSICS_LAYERS.ENEMY_BODY_LAYER_BIT
 	collision_mask = PHYSICS_LAYERS.ENEMY_BODY_MASK
-	if stats_component != null and not stats_component.died.is_connected(_on_stats_died):
-		stats_component.died.connect(_on_stats_died)
+	if stats_component != null:
+		if not stats_component.died.is_connected(_on_stats_died):
+			stats_component.died.connect(_on_stats_died)
+		if not stats_component.health_changed.is_connected(_on_health_changed):
+			stats_component.health_changed.connect(_on_health_changed)
+	_setup_health_bar()
 	_update_facing(Vector2.LEFT)
 	if enemy_spatial_partition != null:
 		enemy_spatial_partition.register_enemy(self)
@@ -330,6 +337,28 @@ func _resolve_body_sprite() -> AnimatedSprite2D:
 		return sprite
 	return get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
 
+func _setup_health_bar() -> void:
+	if health_bar_root == null or health_bar_fill == null:
+		return
+	health_bar_root.z_as_relative = false
+	health_bar_root.z_index = 200
+	_health_bar_width = health_bar_fill.size.x
+	if _health_bar_width <= 0.0:
+		_health_bar_width = health_bar_fill.custom_minimum_size.x
+	_update_health_bar()
+
+func _update_health_bar() -> void:
+	if health_bar_root == null or health_bar_fill == null or stats_component == null:
+		return
+	var max_hp_value := stats_component.get_stat(STAT_IDS.MAX_HP)
+	var current_hp_value := stats_component.get_current_hp()
+	var hp_ratio := 0.0
+	if max_hp_value > 0.0:
+		hp_ratio = clamp(current_hp_value / max_hp_value, 0.0, 1.0)
+	health_bar_root.visible = not stats_component.is_dead() and max_hp_value > 0.0
+	health_bar_fill.size.x = _health_bar_width * hp_ratio
+	health_bar_fill.visible = hp_ratio > 0.0
+
 func _update_facing(direction: Vector2) -> void:
 	if body_sprite == null:
 		return
@@ -360,7 +389,12 @@ func _get_move_speed() -> float:
 	var stat_move_speed: float = stats_component.get_stat(STAT_IDS.MOVE_SPEED)
 	return stat_move_speed if stat_move_speed > 0.0 else move_speed
 
+func _on_health_changed(_old_value: float, _new_value: float, _max_value: float) -> void:
+	_update_health_bar()
+
 func _on_stats_died(_source: Node, _context: Dictionary) -> void:
+	if health_bar_root != null:
+		health_bar_root.visible = false
 	var effect_parent := get_parent()
 	if effect_parent != null and DEATH_EFFECT_SCENE != null:
 		var death_effect := DEATH_EFFECT_SCENE.instantiate() as Node2D

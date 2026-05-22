@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c3n0e2mblx1kh"]
 
-[ext_resource type="Script" path="res://ui/item_details_panel.gd" id="1_item_details_panel"]
+[ext_resource type="Script" uid="uid://bv5xqw2vl1m1w" path="res://ui/item_details_panel.gd" id="1_item_details_panel"]
 [ext_resource type="Texture2D" uid="uid://ca67pu3485ahk" path="res://assets/ui/tilemap.png" id="2_tilemap"]
 [ext_resource type="StyleBox" uid="uid://rv261kh3w0up" path="res://ui/common_style/close_btn.tres" id="3_close_btn"]
 
@@ -10,6 +10,19 @@ region = Rect2(221, 17, 16, 16)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
 texture = SubResource("AtlasTexture_panel_bg")
+texture_margin_left = 5.0
+texture_margin_top = 5.0
+texture_margin_right = 5.0
+texture_margin_bottom = 5.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_icon_bg"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(170, 17, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_icon"]
+texture = SubResource("AtlasTexture_icon_bg")
 texture_margin_left = 5.0
 texture_margin_top = 5.0
 texture_margin_right = 5.0
@@ -41,20 +54,7 @@ texture_margin_top = 4.0
 texture_margin_right = 4.0
 texture_margin_bottom = 4.0
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_icon_bg"]
-atlas = ExtResource("2_tilemap")
-region = Rect2(170, 17, 16, 16)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_icon"]
-texture = SubResource("AtlasTexture_icon_bg")
-texture_margin_left = 5.0
-texture_margin_top = 5.0
-texture_margin_right = 5.0
-texture_margin_bottom = 5.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[node name="ItemDetailsPanel" type="Control"]
+[node name="ItemDetailsPanel" type="Control" unique_id=539225543]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -65,7 +65,7 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("1_item_details_panel")
 
-[node name="Overlay" type="ColorRect" parent="."]
+[node name="Overlay" type="ColorRect" parent="." unique_id=583180071]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -75,7 +75,7 @@ grow_vertical = 2
 mouse_filter = 1
 color = Color(0, 0, 0, 0.4)
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=328341100]
 custom_minimum_size = Vector2(760, 520)
 layout_mode = 1
 anchors_preset = 8
@@ -92,48 +92,48 @@ grow_vertical = 2
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
 
-[node name="Margin" type="MarginContainer" parent="Panel"]
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=1974794150]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="Content" type="VBoxContainer" parent="Panel/Margin"]
+[node name="Content" type="VBoxContainer" parent="Panel/Margin" unique_id=1053231508]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 14
 
-[node name="Header" type="HBoxContainer" parent="Panel/Margin/Content"]
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Content" unique_id=879880123]
 layout_mode = 2
 
-[node name="TitleBlock" type="VBoxContainer" parent="Panel/Margin/Content/Header"]
+[node name="TitleBlock" type="VBoxContainer" parent="Panel/Margin/Content/Header" unique_id=956371179]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="ItemNameLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock"]
+[node name="ItemNameLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock" unique_id=511563619]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
 text = "装备名称"
 
-[node name="MetaRow" type="HBoxContainer" parent="Panel/Margin/Content/Header/TitleBlock"]
+[node name="MetaRow" type="HBoxContainer" parent="Panel/Margin/Content/Header/TitleBlock" unique_id=554830700]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="RarityLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock/MetaRow"]
+[node name="RarityLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock/MetaRow" unique_id=1429017432]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "白色品质"
 
-[node name="CategoryLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock/MetaRow"]
+[node name="CategoryLabel" type="Label" parent="Panel/Margin/Content/Header/TitleBlock/MetaRow" unique_id=1490516848]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "装备"
 
-[node name="CloseButton" type="Button" parent="Panel/Margin/Content/Header"]
+[node name="CloseButton" type="Button" parent="Panel/Margin/Content/Header" unique_id=1761502245]
 custom_minimum_size = Vector2(50, 40)
 layout_mode = 2
 theme_override_styles/normal = ExtResource("3_close_btn")
@@ -142,122 +142,122 @@ theme_override_styles/hover = ExtResource("3_close_btn")
 theme_override_styles/hover_pressed = ExtResource("3_close_btn")
 theme_override_styles/focus = ExtResource("3_close_btn")
 
-[node name="Body" type="HBoxContainer" parent="Panel/Margin/Content"]
+[node name="Body" type="HBoxContainer" parent="Panel/Margin/Content" unique_id=603995010]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
-[node name="LeftColumn" type="VBoxContainer" parent="Panel/Margin/Content/Body"]
+[node name="LeftColumn" type="VBoxContainer" parent="Panel/Margin/Content/Body" unique_id=45596470]
 custom_minimum_size = Vector2(210, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="IconPanel" type="PanelContainer" parent="Panel/Margin/Content/Body/LeftColumn"]
+[node name="IconPanel" type="PanelContainer" parent="Panel/Margin/Content/Body/LeftColumn" unique_id=2104629570]
 custom_minimum_size = Vector2(210, 210)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_icon")
 
-[node name="IconCenter" type="CenterContainer" parent="Panel/Margin/Content/Body/LeftColumn/IconPanel"]
+[node name="IconCenter" type="CenterContainer" parent="Panel/Margin/Content/Body/LeftColumn/IconPanel" unique_id=1349911964]
 layout_mode = 2
 
-[node name="ItemIcon" type="TextureRect" parent="Panel/Margin/Content/Body/LeftColumn/IconPanel/IconCenter"]
+[node name="ItemIcon" type="TextureRect" parent="Panel/Margin/Content/Body/LeftColumn/IconPanel/IconCenter" unique_id=180760458]
 custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
 stretch_mode = 5
 
-[node name="SourcePanel" type="PanelContainer" parent="Panel/Margin/Content/Body/LeftColumn"]
+[node name="SourcePanel" type="PanelContainer" parent="Panel/Margin/Content/Body/LeftColumn" unique_id=1378870433]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_section")
 
-[node name="SourceMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/LeftColumn/SourcePanel"]
+[node name="SourceMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/LeftColumn/SourcePanel" unique_id=719056146]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="SourceLabel" type="Label" parent="Panel/Margin/Content/Body/LeftColumn/SourcePanel/SourceMargin"]
+[node name="SourceLabel" type="Label" parent="Panel/Margin/Content/Body/LeftColumn/SourcePanel/SourceMargin" unique_id=1154334329]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "背包物品"
 
-[node name="ComparePanel" type="PanelContainer" parent="Panel/Margin/Content/Body/LeftColumn"]
+[node name="ComparePanel" type="PanelContainer" parent="Panel/Margin/Content/Body/LeftColumn" unique_id=890367938]
 visible = false
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_section")
 
-[node name="CompareMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/LeftColumn/ComparePanel"]
+[node name="CompareMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/LeftColumn/ComparePanel" unique_id=2091799741]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="CompareLabel" type="Label" parent="Panel/Margin/Content/Body/LeftColumn/ComparePanel/CompareMargin"]
+[node name="CompareLabel" type="Label" parent="Panel/Margin/Content/Body/LeftColumn/ComparePanel/CompareMargin" unique_id=2066497154]
 layout_mode = 2
-autowrap_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "当前查看的是已穿戴装备，可在这里扩展比较信息。"
+autowrap_mode = 2
 
-[node name="RightColumn" type="VBoxContainer" parent="Panel/Margin/Content/Body"]
+[node name="RightColumn" type="VBoxContainer" parent="Panel/Margin/Content/Body" unique_id=918249650]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="SummaryPanel" type="PanelContainer" parent="Panel/Margin/Content/Body/RightColumn"]
+[node name="SummaryPanel" type="PanelContainer" parent="Panel/Margin/Content/Body/RightColumn" unique_id=2096083403]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_section")
 
-[node name="SummaryMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel"]
+[node name="SummaryMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel" unique_id=1755839753]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
-[node name="SummaryVBox" type="VBoxContainer" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin"]
+[node name="SummaryVBox" type="VBoxContainer" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin" unique_id=1915727293]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="EquipSlotLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin/SummaryVBox"]
+[node name="EquipSlotLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin/SummaryVBox" unique_id=1864399826]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "部位：武器"
 
-[node name="ModifierHeaderLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin/SummaryVBox"]
+[node name="ModifierHeaderLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin/SummaryVBox" unique_id=496324424]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "属性"
 
-[node name="ModifiersList" type="VBoxContainer" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin/SummaryVBox"]
+[node name="ModifiersList" type="VBoxContainer" parent="Panel/Margin/Content/Body/RightColumn/SummaryPanel/SummaryMargin/SummaryVBox" unique_id=2097769313]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="StatePanel" type="PanelContainer" parent="Panel/Margin/Content/Body/RightColumn"]
+[node name="StatePanel" type="PanelContainer" parent="Panel/Margin/Content/Body/RightColumn" unique_id=1082045777]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_section")
 
-[node name="StateMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/RightColumn/StatePanel"]
+[node name="StateMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/RightColumn/StatePanel" unique_id=530847315]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
-[node name="StateLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/StatePanel/StateMargin"]
+[node name="StateLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/StatePanel/StateMargin" unique_id=58222694]
 layout_mode = 2
-autowrap_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "这里会根据来源与类型切换详情状态。"
+autowrap_mode = 2
 
-[node name="DescriptionPanel" type="PanelContainer" parent="Panel/Margin/Content/Body/RightColumn"]
+[node name="DescriptionPanel" type="PanelContainer" parent="Panel/Margin/Content/Body/RightColumn" unique_id=1316893033]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxTexture_section")
 
-[node name="DescriptionMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel"]
+[node name="DescriptionMargin" type="MarginContainer" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel" unique_id=1695122363]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 12
@@ -265,47 +265,47 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
-[node name="DescriptionVBox" type="VBoxContainer" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin"]
+[node name="DescriptionVBox" type="VBoxContainer" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin" unique_id=1841303321]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="DescriptionHeaderLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin/DescriptionVBox"]
+[node name="DescriptionHeaderLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin/DescriptionVBox" unique_id=1549496422]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "说明"
 
-[node name="DescriptionScroll" type="ScrollContainer" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin/DescriptionVBox"]
+[node name="DescriptionScroll" type="ScrollContainer" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin/DescriptionVBox" unique_id=266913981]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxTexture_scroll")
 
-[node name="DescriptionLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin/DescriptionVBox/DescriptionScroll"]
+[node name="DescriptionLabel" type="Label" parent="Panel/Margin/Content/Body/RightColumn/DescriptionPanel/DescriptionMargin/DescriptionVBox/DescriptionScroll" unique_id=805386648]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-autowrap_mode = 2
 text = "物品说明"
+autowrap_mode = 2
 
-[node name="Footer" type="HBoxContainer" parent="Panel/Margin/Content"]
+[node name="Footer" type="HBoxContainer" parent="Panel/Margin/Content" unique_id=773822752]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="StateHintPanel" type="PanelContainer" parent="Panel/Margin/Content/Footer"]
+[node name="StateHintPanel" type="PanelContainer" parent="Panel/Margin/Content/Footer" unique_id=1967475476]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxTexture_section")
 
-[node name="StateHintMargin" type="MarginContainer" parent="Panel/Margin/Content/Footer/StateHintPanel"]
+[node name="StateHintMargin" type="MarginContainer" parent="Panel/Margin/Content/Footer/StateHintPanel" unique_id=1153377741]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="StateHintLabel" type="Label" parent="Panel/Margin/Content/Footer/StateHintPanel/StateHintMargin"]
+[node name="StateHintLabel" type="Label" parent="Panel/Margin/Content/Footer/StateHintPanel/StateHintMargin" unique_id=1400675580]
 layout_mode = 2
-autowrap_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "左键查看详情，右键执行交互。"
+autowrap_mode = 2
