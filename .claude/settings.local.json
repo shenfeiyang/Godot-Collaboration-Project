@@ -10,7 +10,9 @@
       "Skill(update-config)",
       "Skill(update-config:*)",
       "Bash(python -)",
-      "Bash(python -m json.tool __TRACKED_VAR__/.claude/settings.json)"
+      "Bash(python -m json.tool __TRACKED_VAR__/.claude/settings.json)",
+      "Read(//c/Users/admin/.claude/projects/d--00-soudache/**)",
+      "Bash(python -c 'import os; from openpyxl import load_workbook; base=r'\\\\''/d/00_soudache/execl'\\\\''; files=['\\\\''stage.xlsx'\\\\'','\\\\''skill.xlsx'\\\\'']; *)"
     ]
   }
 }

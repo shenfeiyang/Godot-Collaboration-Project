@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -NoProfile -Command '$excel = New-Object -ComObject Excel.Application; Write-Output $excel.Version; $excel.Quit\\(\\)')",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:/Users/admin/AppData/Local/Temp/update_excels.ps1\")",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:/Users/admin/AppData/Local/Temp/update_stage_only.ps1\")",
+      "Bash(pwd && ls -la \"/mnt/d/00_soudache/execl\" && ls -la \"d:/00_soudache/execl\")",
+      "Read(//mnt/d/00_soudache/**)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:/Users/admin/AppData/Local/Temp/advance_stage_and_cn_docs.ps1\")",
+      "Bash(python -c \"from pathlib import Path; p=Path\\(r'C:/Users/admin/AppData/Local/Temp/advance_stage_and_cn_docs.ps1'\\); s=p.read_text\\(encoding='utf-8', errors='replace'\\); p.write_text\\(s, encoding='utf-8-sig'\\)\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\admin\\AppData\\Local\\Temp"
+    ]
+  }
+}
