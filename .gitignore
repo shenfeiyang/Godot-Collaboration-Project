@@ -1,3 +1,9 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Claude worktrees (embedded git repos)
+.claude/worktrees/
+
+# Reasonix temp files
+.reasonix/truncated-results/
