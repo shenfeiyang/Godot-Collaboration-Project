@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/passive_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = &"passive_002"
+display_name = "连锁反应"
+description = "闪电链每次跳链伤害递增10%。"
+source_type = "天赋"
+trigger_event = "命中时"
+trigger_condition = "技能标签含链类"
+effect_type = "伤害增幅"
+target_rule = "当前目标"
+param1 = "递增+1000/跳"
+param2 = ""
+duration_ms = 0
+max_stack = 99
+stack_rule = "叠加"
+tags = "链类|雷电|天赋"
+remark = "闪电链专属天赋"

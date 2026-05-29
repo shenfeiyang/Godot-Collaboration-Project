@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/passive_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = &"passive_001"
+display_name = "暴击强化"
+description = "暴击率提升15%，适配高暴击build。"
+source_type = "装备"
+trigger_event = "常驻"
+trigger_condition = ""
+effect_type = "属性加成"
+target_rule = "自身"
+param1 = "暴击率+1500"
+param2 = ""
+duration_ms = 0
+max_stack = 0
+stack_rule = ""
+tags = "暴击核心|装备"
+remark = "适配暴击流武器"

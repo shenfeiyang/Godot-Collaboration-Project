@@ -39,6 +39,7 @@ func _fire_projectile_effect(effect: FireProjectileEffectConfig, context: SkillE
 	if context.combat_manager == null:
 		return
 	var pattern_config: FirePatternConfig = effect.pattern_config
+	var param_pack: SkillParamPack = definition.param_pack if definition != null else null
 	var request: Dictionary = {
 		COMBAT_MANAGER.REQUEST_SOURCE: context.caster,
 		COMBAT_MANAGER.REQUEST_SPAWN_POSITION: context.spawn_position,
@@ -50,10 +51,23 @@ func _fire_projectile_effect(effect: FireProjectileEffectConfig, context: SkillE
 	if pattern_config != null:
 		request[COMBAT_MANAGER.REQUEST_FIRE_MODE] = pattern_config.fire_mode
 		request[COMBAT_MANAGER.REQUEST_PATTERN_CONFIG] = _build_pattern_override(pattern_config, context)
+	# 速度：优先效果覆写，其次参数包
 	if effect.speed_override > 0.0:
 		request[COMBAT_MANAGER.REQUEST_SPEED_OVERRIDE] = effect.speed_override
+	elif param_pack != null and param_pack.bullet_speed > 0:
+		request[COMBAT_MANAGER.REQUEST_SPEED_OVERRIDE] = float(param_pack.bullet_speed)
+	# 伤害：优先效果覆写，其次参数包的伤害倍率
 	if not effect.use_default_damage:
 		request[COMBAT_MANAGER.REQUEST_DAMAGE] = effect.damage_override
+	elif param_pack != null and param_pack.dmg_rate != 10000:
+		# dmg_rate 是万分比，直接传给 CombatManager 做伤害倍率
+		request[COMBAT_MANAGER.REQUEST_DAMAGE] = float(param_pack.dmg_rate)
+	# 触发信息：如果主技能有触发包，把子技能 ID 带到发射请求
+	if param_pack != null and definition.trigger_pack_id != &"":
+		var trig_path := "res://abilities/skills/generated/%s.tres" % definition.trigger_pack_id
+		var trig_config: TriggerConfig = load(trig_path) if ResourceLoader.exists(trig_path) else null
+		if trig_config != null and trig_config.trigger_skill_id != &"":
+			request[COMBAT_MANAGER.REQUEST_TRIGGER_SKILL_ID] = String(trig_config.trigger_skill_id)
 	if not effect.extra.is_empty():
 		request[COMBAT_MANAGER.REQUEST_EXTRA] = effect.extra.duplicate(true)
 	context.combat_manager.request_fire(request)

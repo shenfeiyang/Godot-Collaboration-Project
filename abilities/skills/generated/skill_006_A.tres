@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SkillDefinition" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/skill_definition.gd" id="1_script"]
+[ext_resource type="Script" path="res://abilities/skills/definitions/fire_projectile_effect_config.gd" id="2_fire_effect"]
+[ext_resource type="Resource" path="res://abilities/skills/generated/skPar_skill_006_A.tres" id="3_param_pack"]
+
+[sub_resource type="Resource" id="effect_1"]
+script = ExtResource("2_fire_effect")
+
+[resource]
+script = ExtResource("1_script")
+skill_id = &"skill_006_A"
+display_name = "减速地块"
+tier = "SubSk"
+caster = ""
+main_tag = "Area"
+sub_tag = "Area_Dur"
+dmg_tag = "Phys"
+art_pack_id = &"skArt_skill_006_A"
+param_pack_id = &"skPar_skill_006_A"
+trigger_pack_id = &""
+buff_pack_id = &""
+param_pack = ExtResource("3_param_pack")
+effects = Array[Resource]([SubResource("effect_1")])
+cooldown = 0.0

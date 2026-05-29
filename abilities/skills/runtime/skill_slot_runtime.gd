@@ -67,7 +67,16 @@ func _get_cooldown_duration(context: SkillExecutionContext) -> float:
 		return 0.0
 	if definition.use_attack_speed_scaling and context.caster != null and context.caster.has_method("get_attack_cooldown_interval"):
 		return context.caster.get_attack_cooldown_interval()
+	# 优先使用 SkillParamPack 的 cd_ms（毫秒转秒）
+	var pack_cd: float = _get_param_pack_cd_sec()
+	if pack_cd > 0.0:
+		return pack_cd
 	return _get_base_cooldown_duration()
 
 func _get_base_cooldown_duration() -> float:
 	return definition.cooldown if definition != null else 0.0
+
+func _get_param_pack_cd_sec() -> float:
+	if definition == null or definition.param_pack == null:
+		return 0.0
+	return float(definition.param_pack.cd_ms) / 1000.0

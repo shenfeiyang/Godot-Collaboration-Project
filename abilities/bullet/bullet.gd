@@ -18,6 +18,7 @@ const EXTRA_SKILL1_CLUSTER_RING_BULLET_COUNT := "skill1_cluster_ring_bullet_coun
 const EXTRA_SKILL1_CLUSTER_RING_ANGLE_OFFSET_DEG := "skill1_cluster_ring_angle_offset_deg"
 const EXTRA_SKILL1_CLUSTER_BURST_SPEED := "skill1_cluster_burst_speed"
 const EXTRA_CLUSTER_PATTERN_CONFIG := "cluster_pattern_config"
+const SETUP_TRIGGER_SKILL_ID := "trigger_skill_id"
 
 # 子弹基础飞行速度，单位为像素/秒。
 @export var speed: float = 320.0
@@ -140,6 +141,7 @@ func _handle_hit(target: Variant) -> void:
 		return
 
 	has_resolved_hit = true
+	var hit_extra: Dictionary = shot_context.get(SETUP_EXTRA, {})
 	hit_registered.emit({
 		"target": target,
 		"position": global_position,
@@ -147,7 +149,8 @@ func _handle_hit(target: Variant) -> void:
 		"source": source,
 		"faction": int(faction),
 		SETUP_DAMAGE: shot_context.get(SETUP_DAMAGE, 0.0),
-		SETUP_EXTRA: shot_context.get(SETUP_EXTRA, {}),
+		SETUP_EXTRA: hit_extra,
+		COMBAT_MANAGER.HIT_DATA_TRIGGER_SKILL_ID: shot_context.get(SETUP_TRIGGER_SKILL_ID, ""),
 	})
 	queue_free()
 

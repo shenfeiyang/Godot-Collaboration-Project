@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TriggerConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/trigger_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+trigger_pack_id = &"skTrig_skill_006"
+order = 1
+trigger_event = "Trig_Hit"
+trig_param = 1
+trigger_skill_id = &"skill_006_A"
+trigger_delay_ms = 0
+max_trigger_count = 0

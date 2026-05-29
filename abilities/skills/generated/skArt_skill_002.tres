@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SkillArtConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/skill_art_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+art_pack_id = &"skArt_skill_002"
+icon_key = "Ico_skill_002"
+effect_key = "VFX_skill_002"
+sound_key = "SFX_skill_002"

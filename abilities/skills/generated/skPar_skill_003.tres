@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SkillParamPack" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/skill_param_pack.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+param_pack_id = &"skPar_skill_003"
+dmg_rate = 10000
+cd_ms = 3000
+seek_range = 800
+target_search = "0"
+scale = 10000
+space = 0
+bullet_num = 1
+atk_num = 10
+bullet_speed = 800
+pierc = 0
+duration_ms = 0
+cd_open = 0
+repel = ""
+impact_count = 0
+impact_interval_ms = 0

@@ -6,11 +6,11 @@ const PHYSICS_LAYERS = preload("res://scripts/physics_layers.gd")
 const STAT_IDS = preload("res://scripts/stats/stat_ids.gd")
 const SKILL_SLOT_RUNTIME_SCRIPT = preload("res://abilities/skills/runtime/skill_slot_runtime.gd")
 const SKILL_EXECUTION_CONTEXT_SCRIPT = preload("res://abilities/skills/runtime/skill_execution_context.gd")
-const DEFAULT_BASIC_ATTACK_SKILL = preload("res://abilities/skills/data/basic_attack_skill.tres")
-const DEFAULT_SKILL_1 = preload("res://abilities/skills/data/skill1_definition.tres")
-const DEFAULT_SKILL_2 = preload("res://abilities/skills/data/skill2_definition.tres")
-const DEFAULT_SKILL_3 = preload("res://abilities/skills/data/skill3_definition.tres")
-const DEFAULT_SKILL_4 = preload("res://abilities/skills/data/skill4_definition.tres")
+const DEFAULT_BASIC_ATTACK_SKILL = preload("res://abilities/skills/generated/skill_001.tres")
+const DEFAULT_SKILL_1 = preload("res://abilities/skills/generated/skill_002.tres")
+const DEFAULT_SKILL_2 = preload("res://abilities/skills/generated/skill_003.tres")
+const DEFAULT_SKILL_3 = preload("res://abilities/skills/generated/skill_004.tres")
+const DEFAULT_SKILL_4 = preload("res://abilities/skills/generated/skill_005.tres")
 
 # 默认动画前缀
 const NORMAL_ANIMATION_PREFIX := &"normal"

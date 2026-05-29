@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/passive_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = &"passive_008"
+display_name = "弹药回收"
+description = "击杀敌人有15%概率回复1弹药。"
+source_type = "肉鸽"
+trigger_event = "击杀时"
+trigger_condition = ""
+effect_type = "特殊机制"
+target_rule = "自身"
+param1 = "概率=1500"
+param2 = "弹药+1"
+duration_ms = 0
+max_stack = 3
+stack_rule = "叠加"
+tags = "弹药|肉鸽"
+remark = "弹药续航词条"

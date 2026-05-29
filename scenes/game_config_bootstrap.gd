@@ -1,11 +1,11 @@
 extends Node
 
 const DEFAULT_PLAYER_SKILLS: Array[SkillDefinition] = [
-	preload("res://abilities/skills/data/basic_attack_skill.tres"),
-	preload("res://abilities/skills/data/skill1_definition.tres"),
-	preload("res://abilities/skills/data/skill2_definition.tres"),
-	preload("res://abilities/skills/data/skill3_definition.tres"),
-	preload("res://abilities/skills/data/skill4_definition.tres"),
+	preload("res://abilities/skills/generated/skill_001.tres"),  # 初始枪械
+	preload("res://abilities/skills/generated/skill_002.tres"),  # 手枪
+	preload("res://abilities/skills/generated/skill_003.tres"),  # 机关枪
+	preload("res://abilities/skills/generated/skill_004.tres"),  # 火箭炮
+	preload("res://abilities/skills/generated/skill_005.tres"),  # 火焰手雷
 ]
 const STAT_MODIFIER_CONFIG_SCRIPT = preload("res://scripts/stats/stat_modifier_config.gd")
 

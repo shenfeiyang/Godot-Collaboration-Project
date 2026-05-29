@@ -1,2 +1,6 @@
-# Normalize EOL for all files that Git considers text files.
-* text=auto eol=lf
+# Normalize to LF for text files
+* text=auto
+
+# Generated skill/equipment files (Python scripts on Windows write CRLF)
+abilities/skills/generated/*.tres text eol=lf
+assets/equipment/generated/*.tres text eol=lf

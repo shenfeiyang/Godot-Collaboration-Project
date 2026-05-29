@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/passive_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = &"passive_006"
+display_name = "弱点洞察"
+description = "对感电目标暴击率额外提升25%。"
+source_type = "天赋"
+trigger_event = "命中时"
+trigger_condition = "目标拥有Buff=感电"
+effect_type = "伤害增幅"
+target_rule = "当前目标"
+param1 = "暴击率+2500"
+param2 = ""
+duration_ms = 0
+max_stack = 0
+stack_rule = ""
+tags = "雷电|暴击核心|天赋"
+remark = "雷电+暴击联动天赋"

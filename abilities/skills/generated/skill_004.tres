@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SkillDefinition" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/skill_definition.gd" id="1_script"]
+[ext_resource type="Script" path="res://abilities/skills/definitions/fire_projectile_effect_config.gd" id="2_fire_effect"]
+[ext_resource type="Resource" path="res://abilities/skills/generated/skPar_skill_004.tres" id="3_param_pack"]
+
+[sub_resource type="Resource" id="effect_1"]
+script = ExtResource("2_fire_effect")
+
+[resource]
+script = ExtResource("1_script")
+skill_id = &"skill_004"
+display_name = "火箭炮"
+tier = "MainSk"
+caster = "Player"
+main_tag = "Projectile"
+sub_tag = "Proj_Trk"
+dmg_tag = "Phys"
+art_pack_id = &"skArt_skill_004"
+param_pack_id = &"skPar_skill_004"
+trigger_pack_id = &"skTrig_skill_004"
+buff_pack_id = &""
+param_pack = ExtResource("3_param_pack")
+effects = Array[Resource]([SubResource("effect_1")])
+cooldown = 0.0

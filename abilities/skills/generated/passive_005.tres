@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/passive_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = &"passive_005"
+display_name = "燃烧蔓延"
+description = "点燃效果在敌人间扩散，概率30%。"
+source_type = "肉鸽"
+trigger_event = "击杀时"
+trigger_condition = "目标拥有Buff=点燃"
+effect_type = "状态附加"
+target_rule = "最近敌人"
+param1 = "概率=3000"
+param2 = "点燃"
+duration_ms = 3000
+max_stack = 1
+stack_rule = ""
+tags = "火焰|持续核心|肉鸽"
+remark = "火系扩散词条"

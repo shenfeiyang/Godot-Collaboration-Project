@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/passive_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = &"passive_004"
+display_name = "冰霜之心"
+description = "所有冰系技能冻结概率提升20%。"
+source_type = "装备"
+trigger_event = "常驻"
+trigger_condition = ""
+effect_type = "属性加成"
+target_rule = "自身"
+param1 = "冰系冻结率+2000"
+param2 = ""
+duration_ms = 0
+max_stack = 0
+stack_rule = ""
+tags = "冰霜|控制|装备"
+remark = "冰系build关键被动"

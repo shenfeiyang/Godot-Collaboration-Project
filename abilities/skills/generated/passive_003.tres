@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveConfig" format=3]
+
+[ext_resource type="Script" path="res://abilities/skills/definitions/passive_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = &"passive_003"
+display_name = "弹幕风暴"
+description = "命中累计10次后下次攻击额外发射2枚子弹。"
+source_type = "肉鸽"
+trigger_event = "累计命中时"
+trigger_condition = "命中次数>=10"
+effect_type = "特殊机制"
+target_rule = "自身"
+param1 = "额外子弹=2"
+param2 = ""
+duration_ms = 0
+max_stack = 1
+stack_rule = "叠加"
+tags = "弹道|速射|肉鸽"
+remark = "高频武器核心词条"

@@ -3,6 +3,8 @@ extends Node
 const SHARED_ENUMS = preload("res://scripts/shared_enums.gd")
 const FIRE_PATTERN_RESOLVER = preload("res://scenes/fire_pattern_resolver.gd")
 const STAT_IDS = preload("res://scripts/stats/stat_ids.gd")
+const SKILL_EXECUTION_CONTEXT_SCRIPT = preload("res://abilities/skills/runtime/skill_execution_context.gd")
+const SKILL_RUNNER_SCRIPT = preload("res://abilities/skills/runtime/skill_runner.gd")
 
 # 发射请求里约定使用的字段名，后续怪物或技能节点也按这套键名提交数据。
 const REQUEST_SPAWN_POSITION := "spawn_position"
@@ -34,6 +36,8 @@ const REQUEST_PATTERN_SPIRAL_BULLET_COUNT := FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL
 const REQUEST_PATTERN_SPIRAL_STEP_ANGLE_DEG := "spiral_step_angle_deg"
 const REQUEST_PATTERN_SPIRAL_ANGLE_OFFSET_DEG := FIRE_PATTERN_RESOLVER.CONFIG_SPIRAL_ANGLE_OFFSET_DEG
 const REQUEST_PATTERN_SPIRAL_STATE_ANGLE_DEG := "spiral_state_angle_deg"
+const REQUEST_TRIGGER_SKILL_ID := "trigger_skill_id"
+const HIT_DATA_TRIGGER_SKILL_ID := "hit_trigger_skill_id"
 
 const SPIRAL_STATE_ANGLE_DEG := "spiral_state_angle_deg"
 
@@ -229,6 +233,8 @@ func _build_bullet_setup_data(request: Dictionary) -> Dictionary:
 		setup_data[REQUEST_DAMAGE] = request[REQUEST_DAMAGE]
 	if request.has(REQUEST_EXTRA):
 		setup_data[REQUEST_EXTRA] = request[REQUEST_EXTRA]
+	if request.has(REQUEST_TRIGGER_SKILL_ID):
+		setup_data[REQUEST_TRIGGER_SKILL_ID] = request[REQUEST_TRIGGER_SKILL_ID]
 
 	return setup_data
 
@@ -256,3 +262,28 @@ func _on_bullet_hit_registered(hit_data: Dictionary) -> void:
 		"direction": hit_data.get("direction", Vector2.ZERO),
 		"extra": hit_data.get(REQUEST_EXTRA, {}),
 	})
+
+	# ── Trigger 触发：命中后施放子技能 ──
+	var trigger_skill_id: String = hit_data.get(HIT_DATA_TRIGGER_SKILL_ID, "")
+	if trigger_skill_id.is_empty():
+		return
+	var trigger_skill_path := "res://abilities/skills/generated/%s.tres" % trigger_skill_id
+	var trigger_def: SkillDefinition = load(trigger_skill_path) if ResourceLoader.exists(trigger_skill_path) else null
+	if trigger_def == null:
+		return
+	# 创建临时 runner 执行子技能
+	var context := SkillExecutionContext.new()
+	context.caster = source
+	context.combat_manager = self
+	context.spawn_position = hit_data.get("position", Vector2.ZERO)
+	context.facing_direction = hit_data.get("direction", Vector2.RIGHT)
+	context.faction = int(hit_data.get("faction", 0))
+	var runner: SkillRunner
+	if trigger_def.runner_script != null:
+		runner = trigger_def.runner_script.new() as SkillRunner
+	else:
+		runner = SKILL_RUNNER_SCRIPT.new()
+	if runner == null:
+		return
+	runner.setup(trigger_def)
+	runner.cast(context)
